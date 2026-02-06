@@ -215,7 +215,8 @@ Navbar
   transition: var(--transition);
 }
 .nav-toggle:hover {
-  transform: scale(1.2) rotate(90deg);
+  transform: scale(1.1);
+  color: var(--clr-primary-8);
 }
 .nav-link {
   display: block;
@@ -430,7 +431,6 @@ Services
   background: var(--clr-primary-5);
   color: var(--clr-primary-1);
   padding: 0.5rem;
-  display: inline-block;
   font-size: 2rem;
   margin-bottom: 1.5rem;
   border-radius: 50%;
