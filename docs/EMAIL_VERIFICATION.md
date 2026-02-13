@@ -8,14 +8,14 @@ This document summarizes all the features implemented to add comprehensive email
 
 ### 1. Email Service Integration
 
-**SendGrid Integration**
-- Installed `@sendgrid/mail` package (100 free emails/day)
-- Configured dual email provider support (SendGrid primary, Nodemailer fallback)
+**Brevo Integration**
+- Installed `nodemailer-brevo-transport` package (300 free emails/day)
+- Configured email provider support using Nodemailer with Brevo transport
 - Environment variables configured for easy setup
 
 **Configuration Files Updated:**
-- `.env.example` - Added SendGrid configuration options
-- `server/utils/emailService.js` - Enhanced with SendGrid support
+- `.env.example` - Added Brevo configuration options
+- `server/utils/emailService.js` - Enhanced with Brevo support
 
 ### 2. Email Verification System
 
@@ -275,9 +275,9 @@ All emails use professional HTML templates with responsive design:
 ## Environment Variables Required
 
 ```bash
-# SendGrid (Recommended)
-SENDGRID_API_KEY=your_sendgrid_api_key
-SENDGRID_FROM=noreply@boldadventures.com
+# Brevo (Recommended)
+BREVO_API_KEY=your_brevo_api_key
+BREVO_FROM=noreply@boldadventures.com
 
 # Or use generic SMTP
 EMAIL_HOST=smtp.gmail.com
@@ -325,16 +325,16 @@ EMAIL_PASSWORD=your-app-password
 
 ```json
 {
-  "@sendgrid/mail": "^7.7.0"
+  "nodemailer-brevo-transport": "^2.2.1"
 }
 ```
 
 ## Deployment Considerations
 
-1. **SendGrid Setup:**
-   - Create SendGrid account
-   - Verify sender domain
-   - Generate API key
+1. **Brevo Setup:**
+   - Create Brevo account (formerly Sendinblue)
+   - Verify sender domain or email
+   - Generate API key from Settings > SMTP & API
    - Configure in environment variables
 
 2. **Database Migration:**

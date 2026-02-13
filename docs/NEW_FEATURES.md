@@ -445,7 +445,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ## Future Enhancements
 
-1. **Email Service**: Integrate production email service (SendGrid, Mailgun)
+1. **Email Service**: Integrate production email service (Brevo, Mailgun)
 2. **Push Notifications**: Add browser push notifications
 3. **Review Moderation**: Admin interface for review moderation
 4. **Image Gallery**: Enhanced image gallery UI

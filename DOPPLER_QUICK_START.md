@@ -169,7 +169,7 @@ doppler configure get
 ### Optional Variables
 - `STRIPE_SECRET_KEY` - Stripe payments
 - `GOOGLE_CLIENT_ID` - Google OAuth
-- `SENDGRID_API_KEY` - Email service
+- `BREVO_API_KEY` - Email service
 - See `.env.example` for complete list
 
 ## Best Practices

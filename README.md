@@ -25,7 +25,7 @@ This repository contains the **production-ready full-stack source code** for Bol
 - **bcryptjs** - Password hashing (12 rounds)
 - **Passport.js** - Authentication middleware with Google OAuth 2.0
 - **Stripe & PayPal** - Payment gateway integrations with webhook verification
-- **SendGrid** - Email service for transactional emails (with Nodemailer fallback)
+- **Brevo** - Email service for transactional emails (with Nodemailer fallback)
 - **Socket.io** - Real-time notifications
 - **Axios** - HTTP client for external API calls
 
@@ -91,7 +91,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 - **Transaction History** for users and admins
 
 ### Email System
-- **SendGrid Integration** (100 free emails/day) with Nodemailer fallback
+- **Brevo Integration** (300 free emails/day) with Nodemailer fallback
 - **Welcome Emails** with verification links
 - **Booking Confirmation Emails** with tour details
 - **Payment Receipt Emails** with transaction information
@@ -157,7 +157,7 @@ Edit the `.env` file with your configuration. See [docs/ENV_SETUP.md](./docs/ENV
 - JWT secrets
 - Google OAuth credentials
 - Payment gateway API keys (Stripe & PayPal)
-- Email service credentials (SendGrid recommended)
+- Email service credentials (Brevo recommended)
 - Cloudinary credentials (optional, for image uploads)
 
 4. Start MongoDB (if running locally):
@@ -548,7 +548,7 @@ Comprehensive documentation is available in the `/docs` folder:
 #### 1. **Email Service Integration** [CRITICAL] 
 - **Priority**: Critical for production
 - **Implementation**:
-  - Integrate SendGrid, Mailgun, or AWS SES
+  - Integrate Brevo, Mailgun, or AWS SES
   - Email verification for new users
   - Password reset via email
   - Booking confirmation emails
