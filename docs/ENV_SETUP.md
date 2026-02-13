@@ -11,9 +11,10 @@ This guide provides detailed instructions on how to obtain and configure all the
 5. [Payment Gateway Setup](#payment-gateway-setup)
    - [Stripe](#stripe-setup)
    - [PayPal](#paypal-setup)
-6. [Email Configuration](#email-configuration)
-7. [Security Settings](#security-settings)
-8. [Complete .env Template](#complete-env-template)
+6. [Currency Conversion API](#currency-conversion-api-setup)
+7. [Email Configuration](#email-configuration)
+8. [Security Settings](#security-settings)
+9. [Complete .env Template](#complete-env-template)
 
 ---
 
@@ -268,6 +269,90 @@ PayPal is used for PayPal payments.
 
 ---
 
+## Currency Conversion API Setup
+
+The application uses a currency conversion API to get real-time exchange rates for PayPal payments (KES to USD conversion).
+
+### Setup Exchange Rate API (Optional but Recommended)
+
+1. **Sign up for a free API key**
+   - Go to [ExchangeRate-API](https://www.exchangerate-api.com/)
+   - Click "Get Free Key"
+   - Sign up with your email
+   - Verify your email address
+
+2. **Get your API key**
+   - After verification, you'll see your API key
+   - Free tier includes:
+     - 1,500 requests per month
+     - Updates once per day
+     - All currency pairs
+
+3. **Add to .env**
+   ```
+   EXCHANGE_RATE_API_KEY=your_api_key_here
+   KES_TO_USD_RATE=0.0077
+   ```
+
+### Without API Key (Fallback)
+
+The application works without an API key:
+- Uses a free API with limited requests
+- Falls back to configured rate if API fails
+- Set `KES_TO_USD_RATE` as backup
+
+```
+# No API key needed
+KES_TO_USD_RATE=0.0077
+```
+
+### API Endpoints
+
+The application provides these currency endpoints:
+
+1. **Get Exchange Rate**
+   ```
+   GET /api/currency/rate?from=KES&to=USD
+   ```
+
+2. **Convert Amount**
+   ```
+   GET /api/currency/convert?amount=100000&from=KES&to=USD
+   ```
+
+3. **Supported Currencies**
+   ```
+   GET /api/currency/supported
+   ```
+
+### Features
+
+- **Automatic caching**: Rates are cached for 1 hour to reduce API calls
+- **Fallback mechanism**: Uses configured rate if API fails
+- **Real-time rates**: Fresh rates fetched when cache expires
+- **Multiple currencies**: Supports KES, USD, EUR, GBP, and more
+
+### Testing
+
+```bash
+# Test currency conversion
+curl http://localhost:5000/api/currency/convert?amount=100000&from=KES&to=USD
+
+# Response:
+{
+  "success": true,
+  "data": {
+    "originalAmount": 100000,
+    "convertedAmount": 770.00,
+    "from": "KES",
+    "to": "USD",
+    "timestamp": "2026-02-13T10:00:00.000Z"
+  }
+}
+```
+
+---
+
 ## Email Configuration
 
 For sending emails (password reset, notifications, etc.)
@@ -356,6 +441,10 @@ STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 PAYPAL_MODE=sandbox
 PAYPAL_CLIENT_ID=your_paypal_client_id
 PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+
+# Currency Conversion API
+EXCHANGE_RATE_API_KEY=your_exchange_rate_api_key_here
+KES_TO_USD_RATE=0.0077
 
 # Email Configuration
 EMAIL_SERVICE=gmail

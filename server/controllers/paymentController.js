@@ -1,6 +1,7 @@
 const { stripe, stripeConfig, paypalConfig } = require('../config/payment');
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
+const { convertCurrency } = require('../utils/currencyConverter');
 
 /**
  * @desc    Create Stripe checkout session for booking payment
@@ -178,10 +179,9 @@ const createPayPalOrder = async (req, res) => {
       });
     }
 
-    // Convert KES to USD for PayPal (using approximate conversion rate)
-    // Note: In production, use a currency conversion API for real-time rates
-    const KES_TO_USD_RATE = parseFloat(process.env.KES_TO_USD_RATE || '0.0077'); // ~130 KES = 1 USD
-    const amountInUSD = (booking.totalPrice * KES_TO_USD_RATE).toFixed(2);
+    // Convert KES to USD for PayPal using real-time exchange rates
+    const amountInUSD = await convertCurrency(booking.totalPrice, 'KES', 'USD');
+    const amountInUSDFormatted = amountInUSD.toFixed(2);
 
     // PayPal order creation payload
     const orderData = {
@@ -190,7 +190,7 @@ const createPayPalOrder = async (req, res) => {
         {
           amount: {
             currency_code: 'USD',
-            value: amountInUSD,
+            value: amountInUSDFormatted,
           },
           description: `${booking.tour.title} - Tour Booking for ${booking.numberOfPeople} people`,
           reference_id: bookingId.toString(),

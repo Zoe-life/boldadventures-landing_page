@@ -17,6 +17,7 @@ const tourRoutes = require('./server/routes/tourRoutes');
 const newsletterRoutes = require('./server/routes/newsletterRoutes');
 const bookingRoutes = require('./server/routes/bookingRoutes');
 const paymentRoutes = require('./server/routes/paymentRoutes');
+const currencyRoutes = require('./server/routes/currencyRoutes');
 
 // Initialize express
 const app = express();
@@ -81,6 +82,7 @@ app.use('/api/tours', tourRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/currency', currencyRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
