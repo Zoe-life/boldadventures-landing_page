@@ -10,6 +10,7 @@ const {
 } = require('../controllers/tourController');
 const { protect, restrictTo } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const { auditLogger } = require('../middleware/auditLog');
 
 const router = express.Router();
 
@@ -32,9 +33,9 @@ router.get('/', getTours);
 router.get('/featured', getFeaturedTours);
 router.get('/:id', getTour);
 
-// Protected routes (Admin/Guide only)
-router.post('/', protect, restrictTo('admin', 'guide'), tourValidation, validate, createTour);
-router.put('/:id', protect, restrictTo('admin', 'guide'), updateTour);
-router.delete('/:id', protect, restrictTo('admin'), deleteTour);
+// Protected routes (Admin/Guide only) with audit logging
+router.post('/', protect, restrictTo('admin', 'guide'), tourValidation, validate, auditLogger('CREATE_TOUR', 'TOUR'), createTour);
+router.put('/:id', protect, restrictTo('admin', 'guide'), auditLogger('UPDATE_TOUR', 'TOUR'), updateTour);
+router.delete('/:id', protect, restrictTo('admin'), auditLogger('DELETE_TOUR', 'TOUR'), deleteTour);
 
 module.exports = router;

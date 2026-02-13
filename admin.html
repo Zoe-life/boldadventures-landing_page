@@ -352,6 +352,8 @@
         }
       }
     </style>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <div class="admin-container">
@@ -421,6 +423,12 @@
           </button>
           <button class="admin-tab" data-tab="subscribers">
             <i class="fas fa-envelope"></i> Subscribers
+          </button>
+          <button class="admin-tab" data-tab="analytics">
+            <i class="fas fa-chart-line"></i> Analytics
+          </button>
+          <button class="admin-tab" data-tab="audit-logs">
+            <i class="fas fa-history"></i> Audit Logs
           </button>
         </div>
 
@@ -528,6 +536,73 @@
             </table>
           </div>
         </div>
+
+        <!-- Analytics Panel -->
+        <div class="admin-panel" id="analytics-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-chart-line"></i> Analytics Dashboard</h2>
+            
+            <div style="margin-bottom: 2rem;">
+              <label for="analytics-period" style="margin-right: 1rem;">Time Period:</label>
+              <select id="analytics-period" onchange="loadAnalytics()" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                <option value="7days">Last 7 Days</option>
+                <option value="30days" selected>Last 30 Days</option>
+                <option value="90days">Last 90 Days</option>
+                <option value="1year">Last Year</option>
+              </select>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Bookings Trend</h3>
+                <canvas id="bookings-trend-chart"></canvas>
+              </div>
+              
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Bookings by Status</h3>
+                <canvas id="bookings-status-chart"></canvas>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Popular Tours</h3>
+                <canvas id="popular-tours-chart"></canvas>
+              </div>
+              
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Tours by Category</h3>
+                <canvas id="tours-category-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Logs Panel -->
+        <div class="admin-panel" id="audit-logs-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-history"></i> Audit Logs</h2>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Resource</th>
+                  <th>Status</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="audit-logs-table-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2rem;">
+                    Loading audit logs...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -585,120 +660,320 @@
 
       // Load dashboard statistics and data
       async function loadDashboardData() {
-        // Mock data - Replace with actual API calls when backend is connected
-        document.getElementById('total-users').textContent = '156';
-        document.getElementById('total-tours').textContent = '24';
-        document.getElementById('total-bookings').textContent = '89';
-        document.getElementById('total-subscribers').textContent = '342';
+        try {
+          // Fetch statistics from API
+          const stats = await getAdminStats();
+          
+          document.getElementById('total-users').textContent = stats.totalUsers || '0';
+          document.getElementById('total-tours').textContent = stats.totalTours || '0';
+          document.getElementById('total-bookings').textContent = stats.totalBookings || '0';
+          document.getElementById('total-subscribers').textContent = stats.totalSubscribers || '0';
 
-        // Load mock users
-        loadUsers();
-        loadTours();
-        loadBookings();
-        loadSubscribers();
+          // Load data tables
+          await loadUsers();
+          await loadTours();
+          await loadBookings();
+          await loadSubscribers();
+        } catch (error) {
+          console.error('Error loading dashboard data:', error);
+          // Show fallback values if API fails
+          document.getElementById('total-users').textContent = 'N/A';
+          document.getElementById('total-tours').textContent = 'N/A';
+          document.getElementById('total-bookings').textContent = 'N/A';
+          document.getElementById('total-subscribers').textContent = 'N/A';
+        }
       }
 
-      function loadUsers() {
+      async function loadUsers() {
         const usersTableBody = document.getElementById('users-table-body');
-        const mockUsers = [
-          { name: 'John Doe', email: 'john@example.com', role: 'user', active: true },
-          { name: 'Jane Smith', email: 'jane@example.com', role: 'guide', active: true },
-          { name: 'Admin User', email: 'admin@boldadventures.com', role: 'admin', active: true },
-        ];
-
-        usersTableBody.innerHTML = mockUsers.map(user => `
-          <tr>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td><span class="badge badge-${user.role}">${user.role}</span></td>
-            <td>${user.active ? 'Active' : 'Inactive'}</td>
-            <td>
-              <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button class="action-btn btn-view" onclick="alert('View functionality coming soon')">
-                <i class="fas fa-eye"></i> View
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        
+        try {
+          const data = await getAllUsers({ page: 1, limit: 10 });
+          
+          if (data.users && data.users.length > 0) {
+            usersTableBody.innerHTML = data.users.map(user => `
+              <tr>
+                <td>${user.name || 'N/A'}</td>
+                <td>${user.email || 'N/A'}</td>
+                <td><span class="badge badge-${user.role || 'user'}">${user.role || 'user'}</span></td>
+                <td>${user.isActive ? 'Active' : 'Inactive'}</td>
+                <td>
+                  <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="action-btn btn-view" onclick="alert('View functionality coming soon')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No users found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading users:', error);
+          usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Error loading users</td></tr>';
+        }
       }
 
-      function loadTours() {
+      async function loadTours() {
         const toursTableBody = document.getElementById('tours-table-body');
-        const mockTours = [
-          { title: 'Tibet Adventure', category: 'hiking', location: 'China', duration: '6 days', price: 'Ksh.340,000', featured: true },
-          { title: 'Best of Java', category: 'hiking', location: 'Indonesia', duration: '11 days', price: 'Ksh.200,000', featured: false },
-          { title: 'Explore Hong Kong', category: 'biking', location: 'Hong Kong', duration: '8 days', price: 'Ksh.300,000', featured: true },
-        ];
-
-        toursTableBody.innerHTML = mockTours.map(tour => `
-          <tr>
-            <td>${tour.title}</td>
-            <td>${tour.category}</td>
-            <td>${tour.location}</td>
-            <td>${tour.duration}</td>
-            <td>${tour.price}</td>
-            <td>${tour.featured ? '⭐ Yes' : 'No'}</td>
-            <td>
-              <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button class="action-btn btn-delete" onclick="if(confirm('Delete this tour?')) alert('Delete functionality coming soon')">
-                <i class="fas fa-trash"></i> Delete
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        
+        try {
+          const data = await getAllTours({ page: 1, limit: 10 });
+          
+          if (data.tours && data.tours.length > 0) {
+            toursTableBody.innerHTML = data.tours.map(tour => `
+              <tr>
+                <td>${tour.title || 'N/A'}</td>
+                <td>${tour.category || 'N/A'}</td>
+                <td>${tour.location?.country || 'N/A'}${tour.location?.city ? ', ' + tour.location.city : ''}</td>
+                <td>${tour.duration || 0} days</td>
+                <td>${tour.currency || 'KSH'} ${tour.price?.toLocaleString() || '0'}</td>
+                <td>${tour.featured ? '⭐ Yes' : 'No'}</td>
+                <td>
+                  <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="action-btn btn-delete" onclick="if(confirm('Delete this tour?')) alert('Delete functionality coming soon')">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            toursTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No tours found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading tours:', error);
+          toursTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading tours</td></tr>';
+        }
       }
 
-      function loadBookings() {
+      async function loadBookings() {
         const bookingsTableBody = document.getElementById('bookings-table-body');
-        const mockBookings = [
-          { user: 'John Doe', tour: 'Tibet Adventure', date: '2024-03-15', people: 2, status: 'confirmed' },
-          { user: 'Jane Smith', tour: 'Best of Java', date: '2024-04-20', people: 4, status: 'pending' },
-          { user: 'Bob Johnson', tour: 'Explore Hong Kong', date: '2024-05-10', people: 1, status: 'confirmed' },
-        ];
-
-        bookingsTableBody.innerHTML = mockBookings.map(booking => `
-          <tr>
-            <td>${booking.user}</td>
-            <td>${booking.tour}</td>
-            <td>${booking.date}</td>
-            <td>${booking.people}</td>
-            <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
-            <td>
-              <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
-                <i class="fas fa-eye"></i> View
-              </button>
-              <button class="action-btn btn-edit" onclick="alert('Update status coming soon')">
-                <i class="fas fa-edit"></i> Update
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        
+        try {
+          const data = await getAllBookings({ page: 1, limit: 10 });
+          
+          if (data.bookings && data.bookings.length > 0) {
+            bookingsTableBody.innerHTML = data.bookings.map(booking => {
+              const startDate = new Date(booking.startDate).toLocaleDateString();
+              return `
+                <tr>
+                  <td>${booking.user?.name || 'N/A'}</td>
+                  <td>${booking.tour?.title || 'N/A'}</td>
+                  <td>${startDate}</td>
+                  <td>${booking.numberOfPeople || 0}</td>
+                  <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
+                  <td>
+                    <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="action-btn btn-edit" onclick="showUpdateStatusModal('${booking._id}', '${booking.status}')">
+                      <i class="fas fa-edit"></i> Update
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            bookingsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No bookings found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading bookings:', error);
+          bookingsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading bookings</td></tr>';
+        }
       }
 
-      function loadSubscribers() {
+      async function loadSubscribers() {
         const subscribersTableBody = document.getElementById('subscribers-table-body');
-        const mockSubscribers = [
-          { email: 'subscriber1@example.com', status: 'active', date: '2024-01-15' },
-          { email: 'subscriber2@example.com', status: 'active', date: '2024-02-20' },
-          { email: 'subscriber3@example.com', status: 'inactive', date: '2024-03-10' },
-        ];
+        
+        try {
+          // Note: We need to add a subscribers endpoint in the backend if it doesn't exist
+          // For now, we'll show a placeholder
+          subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Subscribers data will be loaded from API</td></tr>';
+        } catch (error) {
+          console.error('Error loading subscribers:', error);
+          subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Error loading subscribers</td></tr>';
+        }
+      }
 
-        subscribersTableBody.innerHTML = mockSubscribers.map(sub => `
-          <tr>
-            <td>${sub.email}</td>
-            <td>${sub.status}</td>
-            <td>${sub.date}</td>
-            <td>
-              <button class="action-btn btn-view" onclick="alert('View subscriber details coming soon')">
-                <i class="fas fa-eye"></i> View
-              </button>
-            </td>
-          </tr>
-        `).join('');
+      function showUpdateStatusModal(bookingId, currentStatus) {
+        const newStatus = prompt(`Update booking status.\nCurrent: ${currentStatus}\n\nEnter new status (pending, confirmed, cancelled, completed):`, currentStatus);
+        
+        if (newStatus && ['pending', 'confirmed', 'cancelled', 'completed'].includes(newStatus.toLowerCase())) {
+          updateBookingStatusHandler(bookingId, newStatus.toLowerCase());
+        } else if (newStatus) {
+          alert('Invalid status. Please use: pending, confirmed, cancelled, or completed');
+        }
+      }
+
+      async function updateBookingStatusHandler(bookingId, newStatus) {
+        try {
+          await updateBookingStatus(bookingId, newStatus);
+          alert('Booking status updated successfully. Email notification sent to customer.');
+          await loadBookings(); // Reload bookings table
+        } catch (error) {
+          console.error('Error updating booking status:', error);
+          alert('Failed to update booking status: ' + error.message);
+        }
+      }
+
+      // Analytics charts
+      let bookingsTrendChart, bookingsStatusChart, popularToursChart, toursCategoryChart;
+
+      async function loadAnalytics() {
+        const period = document.getElementById('analytics-period').value;
+        
+        try {
+          const data = await getAdminAnalytics(period);
+          
+          // Destroy existing charts
+          if (bookingsTrendChart) bookingsTrendChart.destroy();
+          if (bookingsStatusChart) bookingsStatusChart.destroy();
+          if (popularToursChart) popularToursChart.destroy();
+          if (toursCategoryChart) toursCategoryChart.destroy();
+          
+          // Bookings Trend Chart
+          const trendCtx = document.getElementById('bookings-trend-chart').getContext('2d');
+          bookingsTrendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+              labels: data.bookingsTrend.map(d => d._id),
+              datasets: [{
+                label: 'Bookings',
+                data: data.bookingsTrend.map(d => d.count),
+                borderColor: '#2caeba',
+                backgroundColor: 'rgba(44, 174, 186, 0.1)',
+                tension: 0.4
+              }, {
+                label: 'Revenue',
+                data: data.bookingsTrend.map(d => d.revenue),
+                borderColor: '#ff7f50',
+                backgroundColor: 'rgba(255, 127, 80, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              interaction: { mode: 'index', intersect: false },
+              scales: {
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Bookings' } },
+                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Revenue (KSH)' }, grid: { drawOnChartArea: false } }
+              }
+            }
+          });
+          
+          // Bookings Status Chart
+          const statusCtx = document.getElementById('bookings-status-chart').getContext('2d');
+          bookingsStatusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+              labels: data.bookingsByStatus.map(d => d._id),
+              datasets: [{
+                data: data.bookingsByStatus.map(d => d.count),
+                backgroundColor: ['#2caeba', '#ff7f50', '#ffd700', '#90ee90']
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: { legend: { position: 'bottom' } }
+            }
+          });
+          
+          // Popular Tours Chart
+          const toursCtx = document.getElementById('popular-tours-chart').getContext('2d');
+          popularToursChart = new Chart(toursCtx, {
+            type: 'bar',
+            data: {
+              labels: data.popularTours.map(d => d.title),
+              datasets: [{
+                label: 'Bookings',
+                data: data.popularTours.map(d => d.bookings),
+                backgroundColor: '#2caeba'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+          
+          // Tours Category Chart
+          const categoryCtx = document.getElementById('tours-category-chart').getContext('2d');
+          toursCategoryChart = new Chart(categoryCtx, {
+            type: 'pie',
+            data: {
+              labels: data.toursByCategory.map(d => d._id),
+              datasets: [{
+                data: data.toursByCategory.map(d => d.count),
+                backgroundColor: ['#2caeba', '#ff7f50', '#ffd700']
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: { legend: { position: 'bottom' } }
+            }
+          });
+        } catch (error) {
+          console.error('Error loading analytics:', error);
+          alert('Failed to load analytics data');
+        }
+      }
+
+      async function loadAuditLogs() {
+        const auditLogsTableBody = document.getElementById('audit-logs-table-body');
+        
+        try {
+          const data = await getAuditLogs({ page: 1, limit: 20 });
+          
+          if (data.logs && data.logs.length > 0) {
+            auditLogsTableBody.innerHTML = data.logs.map(log => {
+              const timestamp = new Date(log.createdAt).toLocaleString();
+              return `
+                <tr>
+                  <td>${timestamp}</td>
+                  <td>${log.user?.name || 'System'} (${log.user?.email || 'N/A'})</td>
+                  <td>${log.action}</td>
+                  <td>${log.resource}</td>
+                  <td><span class="badge badge-${log.status.toLowerCase()}">${log.status}</span></td>
+                  <td><button class="action-btn btn-view" onclick="showAuditLogDetails('${log._id}')"><i class="fas fa-info-circle"></i></button></td>
+                </tr>
+              `;
+            }).join('');
+            
+            // Store logs for details view
+            window.auditLogsData = data.logs;
+          } else {
+            auditLogsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No audit logs found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading audit logs:', error);
+          auditLogsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading audit logs</td></tr>';
+        }
+      }
+
+      function showAuditLogDetails(logId) {
+        if (!window.auditLogsData) {
+          alert('Audit log data not available');
+          return;
+        }
+        
+        const log = window.auditLogsData.find(l => l._id === logId);
+        if (!log) {
+          alert('Audit log not found');
+          return;
+        }
+        
+        const details = JSON.stringify(log.details || {}, null, 2);
+        alert('Audit Log Details:\n\n' + details);
       }
     </script>
   </body>
