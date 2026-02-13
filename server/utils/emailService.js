@@ -1,18 +1,20 @@
 const nodemailer = require('nodemailer');
-const sgMail = require('@sendgrid/mail');
-
-// Initialize SendGrid if API key is provided
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+const BrevoTransport = require('nodemailer-brevo-transport');
 
 /**
  * Create email transporter (for Nodemailer)
  */
 const createTransporter = () => {
-  // In production, use a real email service like SendGrid, Mailgun, or AWS SES
-  // For development, you can use Gmail or a test service like Ethereal
+  // Use Brevo if API key is configured (recommended for production)
+  if (process.env.BREVO_API_KEY) {
+    return nodemailer.createTransporter(
+      new BrevoTransport({
+        apiKey: process.env.BREVO_API_KEY,
+      })
+    );
+  }
   
+  // Fallback to Gmail if configured
   if (process.env.EMAIL_SERVICE === 'gmail') {
     return nodemailer.createTransport({
       service: 'gmail',
@@ -44,30 +46,14 @@ const createTransporter = () => {
 };
 
 /**
- * Send email via SendGrid or Nodemailer
+ * Send email via Brevo or Nodemailer fallback
  */
 const sendEmail = async (options) => {
   try {
-    // Use SendGrid if API key is configured
-    if (process.env.SENDGRID_API_KEY) {
-      const msg = {
-        to: options.to,
-        from: process.env.SENDGRID_FROM || process.env.EMAIL_FROM || 'noreply@boldadventures.com',
-        subject: options.subject,
-        text: options.text,
-        html: options.html,
-      };
-
-      const result = await sgMail.send(msg);
-      console.log('Email sent via SendGrid to:', options.to);
-      return { success: true, messageId: result[0].headers['x-message-id'] };
-    }
-    
-    // Fallback to Nodemailer
     const transporter = createTransporter();
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM || 'BoldAdventures <noreply@boldadventures.com>',
+      from: process.env.BREVO_FROM || process.env.EMAIL_FROM || 'BoldAdventures <noreply@boldadventures.com>',
       to: options.to,
       subject: options.subject,
       text: options.text,
@@ -84,6 +70,8 @@ const sendEmail = async (options) => {
       console.log('---');
       console.log(info.message.toString());
       console.log('---');
+    } else {
+      console.log('Email sent to:', options.to);
     }
 
     return { success: true, messageId: info.messageId };

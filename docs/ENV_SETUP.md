@@ -380,9 +380,14 @@ For sending emails (password reset, notifications, etc.)
 
 ### Using Other Services
 
-You can also use SendGrid, Mailgun, or any SMTP service:
+You can also use Brevo, Mailgun, or any SMTP service:
 
 ```
+# For Brevo (recommended - 300 free emails/day)
+BREVO_API_KEY=your_brevo_api_key
+BREVO_FROM=noreply@boldadventures.com
+
+# For other SMTP services
 EMAIL_SERVICE=smtp
 EMAIL_HOST=smtp.example.com
 EMAIL_PORT=587

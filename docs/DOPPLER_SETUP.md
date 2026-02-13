@@ -118,8 +118,8 @@ EXCHANGE_RATE_API_KEY=your_exchange_rate_api_key_here
 KES_TO_USD_RATE=0.0077
 
 # Email Configuration (Optional)
-SENDGRID_API_KEY=your_sendgrid_api_key_here
-SENDGRID_FROM=noreply@boldadventures.com
+BREVO_API_KEY=your_brevo_api_key_here
+BREVO_FROM=noreply@boldadventures.com
 
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
