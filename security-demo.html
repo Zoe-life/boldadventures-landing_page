@@ -63,7 +63,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔒 Security Demo - BoldAdventures</h1>
+        <h1> Security Demo - BoldAdventures</h1>
         
         <div class="section">
             <h2>1. Get CSRF Token</h2>
@@ -75,8 +75,8 @@
         <div class="section">
             <h2>2. Test CSRF Protection</h2>
             <p>Try to make a request with and without the CSRF token.</p>
-            <button onclick="testWithToken()">✅ Request WITH Token</button>
-            <button onclick="testWithoutToken()">❌ Request WITHOUT Token</button>
+            <button onclick="testWithToken()"> Request WITH Token</button>
+            <button onclick="testWithoutToken()"> Request WITHOUT Token</button>
             <div id="csrf-result" class="result" style="display: none;"></div>
         </div>
         
@@ -120,7 +120,7 @@
                     csrfToken = data.csrfToken;
                     resultDiv.className = 'result success';
                     resultDiv.innerHTML = `
-✅ CSRF Token Retrieved Successfully!
+ CSRF Token Retrieved Successfully!
 
 Token: <span class="token">${csrfToken}</span>
 
@@ -131,7 +131,7 @@ This token will be used in subsequent requests.
                 }
             } catch (error) {
                 resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.textContent = ` Error: ${error.message}`;
             }
         }
         
@@ -141,7 +141,7 @@ This token will be used in subsequent requests.
             
             if (!csrfToken) {
                 resultDiv.className = 'result error';
-                resultDiv.textContent = '❌ Please get CSRF token first!';
+                resultDiv.textContent = ' Please get CSRF token first!';
                 return;
             }
             
@@ -169,7 +169,7 @@ This token will be used in subsequent requests.
                     // 400 might be validation error (user exists, etc)
                     resultDiv.className = 'result success';
                     resultDiv.textContent = `
-✅ Request was accepted by server!
+ Request was accepted by server!
 
 Status: ${response.status}
 Message: ${data.message}
@@ -181,7 +181,7 @@ The CSRF protection allowed this request because it had a valid token.
                 }
             } catch (error) {
                 resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.textContent = ` Error: ${error.message}`;
             }
         }
         
@@ -210,7 +210,7 @@ The CSRF protection allowed this request because it had a valid token.
                 if (response.status === 403) {
                     resultDiv.className = 'result success';
                     resultDiv.textContent = `
-✅ CSRF Protection Working!
+ CSRF Protection Working!
 
 Status: ${response.status}
 Message: ${data.message}
@@ -221,7 +221,7 @@ This protects against Cross-Site Request Forgery attacks.
                 } else {
                     resultDiv.className = 'result error';
                     resultDiv.textContent = `
-⚠️ Unexpected Response
+ Unexpected Response
 
 Status: ${response.status}
 Message: ${data.message}
@@ -231,7 +231,7 @@ Expected 403 Forbidden for missing CSRF token.
                 }
             } catch (error) {
                 resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.textContent = ` Error: ${error.message}`;
             }
         }
         
@@ -252,10 +252,10 @@ Expected 403 Forbidden for missing CSRF token.
                         resultDiv.textContent += `Request ${i}: ⛔ Blocked (429 Too Many Requests)\n`;
                     } else {
                         successCount++;
-                        resultDiv.textContent += `Request ${i}: ✅ Success (${response.status})\n`;
+                        resultDiv.textContent += `Request ${i}:  Success (${response.status})\n`;
                     }
                 } catch (error) {
-                    resultDiv.textContent += `Request ${i}: ❌ Error\n`;
+                    resultDiv.textContent += `Request ${i}:  Error\n`;
                 }
                 
                 // Small delay between requests
@@ -265,7 +265,7 @@ Expected 403 Forbidden for missing CSRF token.
             resultDiv.textContent += `\n`;
             if (blockedCount > 0) {
                 resultDiv.className = 'result success';
-                resultDiv.textContent += `✅ Rate Limiting Working!\n${blockedCount} requests were blocked.\n${successCount} requests succeeded.`;
+                resultDiv.textContent += ` Rate Limiting Working!\n${blockedCount} requests were blocked.\n${successCount} requests succeeded.`;
             } else {
                 resultDiv.textContent += `All requests succeeded. Rate limit not triggered yet.`;
             }
@@ -286,7 +286,7 @@ Expected 403 Forbidden for missing CSRF token.
                 
                 resultDiv.className = 'result success';
                 resultDiv.textContent = `
-✅ NoSQL Injection Protection Working!
+ NoSQL Injection Protection Working!
 
 Attempted injection: price[$gt]=0
 This MongoDB operator should be sanitized by express-mongo-sanitize.
@@ -295,7 +295,7 @@ Response Status: ${response.status}
                 `;
             } catch (error) {
                 resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.textContent = ` Error: ${error.message}`;
             }
         }
         
@@ -312,7 +312,7 @@ Response Status: ${response.status}
                 if (response.ok) {
                     resultDiv.className = 'result success';
                     resultDiv.textContent = `
-✅ Server is running!
+ Server is running!
 
 ${JSON.stringify(data, null, 2)}
                     `;
@@ -321,7 +321,7 @@ ${JSON.stringify(data, null, 2)}
                 }
             } catch (error) {
                 resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.textContent = ` Error: ${error.message}`;
             }
         }
     </script>

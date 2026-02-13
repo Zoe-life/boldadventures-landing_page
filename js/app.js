@@ -161,10 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create booking
         createBooking(tourId, startDate, parseInt(numberOfPeople))
           .then(booking => {
-            alert(`✓ Booking successful! Your booking reference is ${booking._id.substring(0, 8).toUpperCase()}`);
+            alert(`Booking successful! Your booking reference is ${booking._id.substring(0, 8).toUpperCase()}`);
           })
           .catch(error => {
-            alert(`✗ Booking failed: ${error.message}`);
+            alert(`Booking failed: ${error.message}`);
           });
       }
     });
@@ -206,14 +206,14 @@ if (newsletterForm) {
       const data = await response.json();
       
       if (data.success) {
-        alert('✓ Successfully subscribed to newsletter!');
+        alert('Successfully subscribed to newsletter!');
         emailInput.value = '';
       } else {
-        alert('✗ ' + data.message);
+        alert(data.message);
       }
     } catch (error) {
       console.error('Newsletter subscription error:', error);
-      alert('✗ Failed to subscribe. Please try again later.');
+      alert('Failed to subscribe. Please try again later.');
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'submit';
@@ -345,11 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
               // Create booking
               createBooking(tourId, startDate, parseInt(numberOfPeople))
                 .then(booking => {
-                  alert(`✓ Booking successful! Your booking reference is ${booking._id.substring(0, 8).toUpperCase()}`);
+                  alert(`Booking successful! Your booking reference is ${booking._id.substring(0, 8).toUpperCase()}`);
                   toursModal.classList.remove('show-modal');
                 })
                 .catch(error => {
-                  alert(`✗ Booking failed: ${error.message}`);
+                  alert(`Booking failed: ${error.message}`);
                 });
             }
           });

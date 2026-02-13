@@ -62,17 +62,17 @@ To further reduce the likelihood of browser permission prompts:
 ## Impact
 
 ### Positive
-- ✅ May reduce browser permission prompts for network device access
-- ✅ Improves user experience during login/booking flow
-- ✅ Reduces security concerns by being explicit about transports
-- ✅ Maintains full real-time notification functionality
-- ✅ WebSocket and polling are sufficient for all application needs
+- May reduce browser permission prompts for network device access
+- Improves user experience during login/booking flow
+- Reduces security concerns by being explicit about transports
+- Maintains full real-time notification functionality
+- WebSocket and polling are sufficient for all application needs
 
 ### No Negative Impact
-- ⚠️ WebSocket and polling are the standard Socket.IO transports
-- ⚠️ This configuration matches Socket.IO defaults
-- ⚠️ No functionality is lost by explicitly declaring the transports
-- ⚠️ Polling fallback ensures compatibility with restrictive networks/firewalls
+- WebSocket and polling are the standard Socket.IO transports
+- This configuration matches Socket.IO defaults
+- No functionality is lost by explicitly declaring the transports
+- Polling fallback ensures compatibility with restrictive networks/firewalls
 
 ## Testing
 
