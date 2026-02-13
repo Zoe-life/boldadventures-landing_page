@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const path = require('path');
+const passport = require('passport');
 
 const connectDB = require('./server/config/database');
 const { errorHandler, notFound } = require('./server/middleware/errorHandler');
@@ -21,6 +22,9 @@ const app = express();
 
 // Connect to database
 connectDB();
+
+// Passport configuration
+require('./server/config/passport')(passport);
 
 // Security middleware
 app.use(helmet({
@@ -58,6 +62,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Cookie parser
 app.use(cookieParser());
+
+// Initialize Passport
+app.use(passport.initialize());
 
 // Logging middleware
 if (process.env.NODE_ENV === 'development') {

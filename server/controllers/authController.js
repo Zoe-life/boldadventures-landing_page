@@ -347,6 +347,39 @@ const changePassword = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Google OAuth callback handler
+ * @route   GET /api/auth/google/callback
+ * @access  Public
+ */
+const googleCallback = async (req, res) => {
+  try {
+    const user = req.user;
+
+    // Update last login
+    user.lastLogin = Date.now();
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    // Save refresh token to user
+    user.refreshTokens.push({ token: refreshToken });
+    await user.save();
+
+    // Set cookies
+    setTokenCookies(res, accessToken, refreshToken);
+
+    // Redirect to frontend with success
+    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:5000'}/index.html?oauth=success&token=${accessToken}`;
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    const redirectUrl = `${process.env.CLIENT_URL || 'http://localhost:5000'}/login.html?oauth=error`;
+    res.redirect(redirectUrl);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -355,4 +388,5 @@ module.exports = {
   getMe,
   updateProfile,
   changePassword,
+  googleCallback,
 };
