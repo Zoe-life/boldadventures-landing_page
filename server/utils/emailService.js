@@ -70,7 +70,7 @@ const sendEmail = async (options) => {
       console.log('---');
       console.log(info.message.toString());
       console.log('---');
-    } else {
+    } else if (process.env.NODE_ENV === 'development') {
       console.log('Email sent to:', options.to);
     }
 
