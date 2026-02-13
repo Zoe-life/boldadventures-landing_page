@@ -33,12 +33,19 @@ const createReview = async (req, res) => {
       });
     }
 
-    // Optional: Check if user has booked this tour
-    const hasBooked = await Booking.findOne({
-      tour,
-      user: req.user._id,
-      status: 'confirmed',
-    });
+    // Optional: Check if user has booked this tour (uncomment to enforce)
+    // const hasBooked = await Booking.findOne({
+    //   tour,
+    //   user: req.user._id,
+    //   status: 'confirmed',
+    // });
+    // 
+    // if (!hasBooked) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: 'You can only review tours you have booked',
+    //   });
+    // }
 
     // Create review
     const review = await Review.create({
