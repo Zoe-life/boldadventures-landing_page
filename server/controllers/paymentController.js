@@ -2,6 +2,7 @@ const { stripe, stripeConfig, paypalConfig } = require('../config/payment');
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
 const { convertCurrency } = require('../utils/currencyConverter');
+const { sendPaymentReceipt } = require('../utils/emailService');
 
 /**
  * @desc    Create Stripe checkout session for booking payment
@@ -116,13 +117,23 @@ const verifyStripePayment = async (req, res) => {
           stripePaymentIntentId: session.payment_intent,
         },
         { new: true }
-      );
+      ).populate('user').populate('booking');
 
       // Update booking
-      await Booking.findByIdAndUpdate(bookingId, {
+      const booking = await Booking.findByIdAndUpdate(bookingId, {
         paymentStatus: 'paid',
         status: 'confirmed',
-      });
+      }, { new: true }).populate('tour');
+
+      // Send payment receipt email
+      if (payment && booking && payment.user && booking.tour) {
+        try {
+          await sendPaymentReceipt(payment, payment.user, booking, booking.tour);
+        } catch (emailError) {
+          console.error('Failed to send payment receipt email:', emailError);
+          // Don't fail the payment verification if email fails
+        }
+      }
 
       res.status(200).json({
         success: true,
@@ -260,7 +271,7 @@ const capturePayPalPayment = async (req, res) => {
         paypalOrderId: orderId,
       },
       { new: true }
-    );
+    ).populate('user').populate('booking');
 
     if (!payment) {
       return res.status(404).json({
@@ -270,10 +281,20 @@ const capturePayPalPayment = async (req, res) => {
     }
 
     // Update booking
-    await Booking.findByIdAndUpdate(bookingId, {
+    const booking = await Booking.findByIdAndUpdate(bookingId, {
       paymentStatus: 'paid',
       status: 'confirmed',
-    });
+    }, { new: true }).populate('tour');
+
+    // Send payment receipt email
+    if (payment && booking && payment.user && booking.tour) {
+      try {
+        await sendPaymentReceipt(payment, payment.user, booking, booking.tour);
+      } catch (emailError) {
+        console.error('Failed to send payment receipt email:', emailError);
+        // Don't fail the payment capture if email fails
+      }
+    }
 
     res.status(200).json({
       success: true,
