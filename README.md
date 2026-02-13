@@ -134,6 +134,20 @@ npm install
 ```
 
 3. Set up environment variables:
+
+**Option A: Using Doppler (Recommended for Production)**
+
+This application supports [Doppler](https://doppler.com) for secure secrets management. See [docs/DOPPLER_SETUP.md](./docs/DOPPLER_SETUP.md) for detailed setup instructions.
+
+Quick start with Doppler CLI:
+```bash
+doppler login
+doppler setup
+doppler run -- npm run dev
+```
+
+**Option B: Using .env file (Local Development)**
+
 ```bash
 cp .env.example .env
 ```
@@ -520,6 +534,7 @@ Comprehensive documentation is available in the `/docs` folder:
 - **[API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md)** - Complete API reference with examples
 - **[SECURITY.md](./docs/SECURITY.md)** - Security features and best practices
 - **[DEPLOYMENT.md](./docs/DEPLOYMENT.md)** - Step-by-step deployment guide
+- **[DOPPLER_SETUP.md](./docs/DOPPLER_SETUP.md)** - Doppler secrets management setup guide
 - **[ENV_SETUP.md](./docs/ENV_SETUP.md)** - Environment variable configuration
 - **[QUICKSTART.md](./docs/QUICKSTART.md)** - 5-minute setup guide
 - **[TESTING.md](./docs/TESTING.md)** - Testing guide and examples
