@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 /**
  * Stripe Webhook Signature Verification
@@ -17,7 +16,18 @@ const verifyStripeWebhook = (req, res, next) => {
     });
   }
 
+  // Only initialize Stripe when needed
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    console.warn('STRIPE_SECRET_KEY not configured');
+    return res.status(500).json({
+      success: false,
+      message: 'Payment gateway not configured',
+    });
+  }
+
   try {
+    const stripe = require('stripe')(stripeKey);
     const event = stripe.webhooks.constructEvent(
       req.body,
       sig,

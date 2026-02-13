@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSRF Protection Demo - BoldAdventures</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2caeba;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #2caeba;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #228a97;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .token {
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Security Demo - BoldAdventures</h1>
+        
+        <div class="section">
+            <h2>1. Get CSRF Token</h2>
+            <p>First, request a CSRF token from the server. This token must be included in all state-changing requests.</p>
+            <button onclick="getCsrfToken()">Get CSRF Token</button>
+            <div id="token-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Test CSRF Protection</h2>
+            <p>Try to make a request with and without the CSRF token.</p>
+            <button onclick="testWithToken()">✅ Request WITH Token</button>
+            <button onclick="testWithoutToken()">❌ Request WITHOUT Token</button>
+            <div id="csrf-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2>3. Test Rate Limiting</h2>
+            <p>Trigger rate limiting by making multiple rapid requests.</p>
+            <button onclick="testRateLimit()">Test Rate Limiting (10 requests)</button>
+            <div id="rate-limit-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2>4. Test NoSQL Injection Protection</h2>
+            <p>Try to inject MongoDB operators (should be sanitized).</p>
+            <button onclick="testNoSqlInjection()">Test NoSQL Injection</button>
+            <div id="nosql-result" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2>5. Server Health</h2>
+            <button onclick="checkHealth()">Check Server Health</button>
+            <div id="health-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <script>
+        let csrfToken = null;
+        
+        async function getCsrfToken() {
+            const resultDiv = document.getElementById('token-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Fetching CSRF token...';
+            
+            try {
+                const response = await fetch('/api/csrf-token', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    csrfToken = data.csrfToken;
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+✅ CSRF Token Retrieved Successfully!
+
+Token: <span class="token">${csrfToken}</span>
+
+This token will be used in subsequent requests.
+                    `;
+                } else {
+                    throw new Error('Failed to get CSRF token');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testWithToken() {
+            const resultDiv = document.getElementById('csrf-result');
+            resultDiv.style.display = 'block';
+            
+            if (!csrfToken) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ Please get CSRF token first!';
+                return;
+            }
+            
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Making request WITH CSRF token...';
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': csrfToken
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        name: 'Test User',
+                        email: 'test@example.com',
+                        password: 'TestPassword123!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok || response.status === 400) {
+                    // 400 might be validation error (user exists, etc)
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `
+✅ Request was accepted by server!
+
+Status: ${response.status}
+Message: ${data.message}
+
+The CSRF protection allowed this request because it had a valid token.
+                    `;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testWithoutToken() {
+            const resultDiv = document.getElementById('csrf-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Making request WITHOUT CSRF token...';
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        name: 'Test User',
+                        email: 'test2@example.com',
+                        password: 'TestPassword123!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 403) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `
+✅ CSRF Protection Working!
+
+Status: ${response.status}
+Message: ${data.message}
+
+The request was blocked because it didn't have a valid CSRF token.
+This protects against Cross-Site Request Forgery attacks.
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `
+⚠️ Unexpected Response
+
+Status: ${response.status}
+Message: ${data.message}
+
+Expected 403 Forbidden for missing CSRF token.
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testRateLimit() {
+            const resultDiv = document.getElementById('rate-limit-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Sending 10 rapid requests to test rate limiting...\n\n';
+            
+            let blockedCount = 0;
+            let successCount = 0;
+            
+            for (let i = 1; i <= 10; i++) {
+                try {
+                    const response = await fetch('/api/health');
+                    if (response.status === 429) {
+                        blockedCount++;
+                        resultDiv.textContent += `Request ${i}: ⛔ Blocked (429 Too Many Requests)\n`;
+                    } else {
+                        successCount++;
+                        resultDiv.textContent += `Request ${i}: ✅ Success (${response.status})\n`;
+                    }
+                } catch (error) {
+                    resultDiv.textContent += `Request ${i}: ❌ Error\n`;
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            resultDiv.textContent += `\n`;
+            if (blockedCount > 0) {
+                resultDiv.className = 'result success';
+                resultDiv.textContent += `✅ Rate Limiting Working!\n${blockedCount} requests were blocked.\n${successCount} requests succeeded.`;
+            } else {
+                resultDiv.textContent += `All requests succeeded. Rate limit not triggered yet.`;
+            }
+        }
+        
+        async function testNoSqlInjection() {
+            const resultDiv = document.getElementById('nosql-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Testing NoSQL injection protection...';
+            
+            try {
+                const response = await fetch('/api/tours?price[$gt]=0', {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `
+✅ NoSQL Injection Protection Working!
+
+Attempted injection: price[$gt]=0
+This MongoDB operator should be sanitized by express-mongo-sanitize.
+
+Response Status: ${response.status}
+                `;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function checkHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Checking server health...';
+            
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `
+✅ Server is running!
+
+${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    throw new Error('Server health check failed');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

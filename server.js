@@ -142,7 +142,11 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve frontend for all other routes (SPA support)
-app.get('*', (req, res) => {
+app.use((req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 

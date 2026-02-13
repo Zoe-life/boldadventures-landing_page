@@ -42,7 +42,7 @@ const createSpeedLimiter = (options = {}) => {
   return slowDown({
     windowMs: options.windowMs || 15 * 60 * 1000, // 15 minutes
     delayAfter: options.delayAfter || 50, // Allow 50 requests per windowMs
-    delayMs: options.delayMs || 500, // Add 500ms delay per request after delayAfter
+    delayMs: () => 500, // Fixed delay of 500ms per request after delayAfter
     maxDelayMs: options.maxDelayMs || 20000, // Maximum delay of 20 seconds
     skipFailedRequests: false,
     skipSuccessfulRequests: false,
