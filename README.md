@@ -74,7 +74,7 @@ The application will be available at `http://localhost:5000`
 
 ## API Documentation
 
-See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for complete API reference including:
+See [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) for complete API reference including:
 - Authentication endpoints
 - Tour management
 - Newsletter subscription
@@ -144,7 +144,7 @@ Deployment:
 The frontend is currently deployed on Vercel.
 The backend can be deployed on **Render** (recommended) or Cloudflare Workers.
 
-See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for deployment instructions.
+See [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) for deployment instructions.
 
 ## Test Accounts
 
