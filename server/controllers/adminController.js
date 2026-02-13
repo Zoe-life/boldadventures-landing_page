@@ -3,6 +3,7 @@ const Tour = require('../models/Tour');
 const Booking = require('../models/Booking');
 const Newsletter = require('../models/Newsletter');
 const AuditLog = require('../models/AuditLog');
+const { sendBookingStatusUpdate } = require('../utils/emailService');
 
 /**
  * @desc    Get admin dashboard statistics
@@ -228,7 +229,10 @@ const updateBookingStatus = async (req, res) => {
   try {
     const { status, paymentStatus } = req.body;
 
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findById(req.params.id)
+      .populate('tour')
+      .populate('user');
+      
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -243,8 +247,11 @@ const updateBookingStatus = async (req, res) => {
     if (paymentStatus) booking.paymentStatus = paymentStatus;
     await booking.save();
 
-    // TODO: Send email notification to user about status change
-    // This will be implemented in the email notifications section
+    // Send email notification if status changed
+    if (oldStatus !== booking.status) {
+      sendBookingStatusUpdate(booking, booking.user, booking.tour, oldStatus, booking.status)
+        .catch(err => console.error('Failed to send email notification:', err));
+    }
 
     res.status(200).json({
       success: true,
