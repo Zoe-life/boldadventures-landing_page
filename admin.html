@@ -352,6 +352,8 @@
         }
       }
     </style>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <div class="admin-container">
@@ -421,6 +423,12 @@
           </button>
           <button class="admin-tab" data-tab="subscribers">
             <i class="fas fa-envelope"></i> Subscribers
+          </button>
+          <button class="admin-tab" data-tab="analytics">
+            <i class="fas fa-chart-line"></i> Analytics
+          </button>
+          <button class="admin-tab" data-tab="audit-logs">
+            <i class="fas fa-history"></i> Audit Logs
           </button>
         </div>
 
@@ -522,6 +530,73 @@
                 <tr>
                   <td colspan="4" style="text-align: center; padding: 2rem;">
                     Loading subscribers...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Analytics Panel -->
+        <div class="admin-panel" id="analytics-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-chart-line"></i> Analytics Dashboard</h2>
+            
+            <div style="margin-bottom: 2rem;">
+              <label for="analytics-period" style="margin-right: 1rem;">Time Period:</label>
+              <select id="analytics-period" onchange="loadAnalytics()" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                <option value="7days">Last 7 Days</option>
+                <option value="30days" selected>Last 30 Days</option>
+                <option value="90days">Last 90 Days</option>
+                <option value="1year">Last Year</option>
+              </select>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Bookings Trend</h3>
+                <canvas id="bookings-trend-chart"></canvas>
+              </div>
+              
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Bookings by Status</h3>
+                <canvas id="bookings-status-chart"></canvas>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Popular Tours</h3>
+                <canvas id="popular-tours-chart"></canvas>
+              </div>
+              
+              <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem;">Tours by Category</h3>
+                <canvas id="tours-category-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Logs Panel -->
+        <div class="admin-panel" id="audit-logs-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-history"></i> Audit Logs</h2>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Resource</th>
+                  <th>Status</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="audit-logs-table-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2rem;">
+                    Loading audit logs...
                   </td>
                 </tr>
               </tbody>
@@ -737,14 +812,150 @@
       async function updateBookingStatusHandler(bookingId, newStatus) {
         try {
           await updateBookingStatus(bookingId, newStatus);
-          alert('Booking status updated successfully');
+          alert('Booking status updated successfully. Email notification sent to customer.');
           await loadBookings(); // Reload bookings table
         } catch (error) {
           console.error('Error updating booking status:', error);
           alert('Failed to update booking status: ' + error.message);
         }
       }
-        `).join('');
+
+      // Analytics charts
+      let bookingsTrendChart, bookingsStatusChart, popularToursChart, toursCategoryChart;
+
+      async function loadAnalytics() {
+        const period = document.getElementById('analytics-period').value;
+        
+        try {
+          const data = await getAdminAnalytics(period);
+          
+          // Destroy existing charts
+          if (bookingsTrendChart) bookingsTrendChart.destroy();
+          if (bookingsStatusChart) bookingsStatusChart.destroy();
+          if (popularToursChart) popularToursChart.destroy();
+          if (toursCategoryChart) toursCategoryChart.destroy();
+          
+          // Bookings Trend Chart
+          const trendCtx = document.getElementById('bookings-trend-chart').getContext('2d');
+          bookingsTrendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+              labels: data.bookingsTrend.map(d => d._id),
+              datasets: [{
+                label: 'Bookings',
+                data: data.bookingsTrend.map(d => d.count),
+                borderColor: '#2caeba',
+                backgroundColor: 'rgba(44, 174, 186, 0.1)',
+                tension: 0.4
+              }, {
+                label: 'Revenue',
+                data: data.bookingsTrend.map(d => d.revenue),
+                borderColor: '#ff7f50',
+                backgroundColor: 'rgba(255, 127, 80, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              interaction: { mode: 'index', intersect: false },
+              scales: {
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Bookings' } },
+                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Revenue (KSH)' }, grid: { drawOnChartArea: false } }
+              }
+            }
+          });
+          
+          // Bookings Status Chart
+          const statusCtx = document.getElementById('bookings-status-chart').getContext('2d');
+          bookingsStatusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+              labels: data.bookingsByStatus.map(d => d._id),
+              datasets: [{
+                data: data.bookingsByStatus.map(d => d.count),
+                backgroundColor: ['#2caeba', '#ff7f50', '#ffd700', '#90ee90']
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: { legend: { position: 'bottom' } }
+            }
+          });
+          
+          // Popular Tours Chart
+          const toursCtx = document.getElementById('popular-tours-chart').getContext('2d');
+          popularToursChart = new Chart(toursCtx, {
+            type: 'bar',
+            data: {
+              labels: data.popularTours.map(d => d.title),
+              datasets: [{
+                label: 'Bookings',
+                data: data.popularTours.map(d => d.bookings),
+                backgroundColor: '#2caeba'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+          
+          // Tours Category Chart
+          const categoryCtx = document.getElementById('tours-category-chart').getContext('2d');
+          toursCategoryChart = new Chart(categoryCtx, {
+            type: 'pie',
+            data: {
+              labels: data.toursByCategory.map(d => d._id),
+              datasets: [{
+                data: data.toursByCategory.map(d => d.count),
+                backgroundColor: ['#2caeba', '#ff7f50', '#ffd700']
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: { legend: { position: 'bottom' } }
+            }
+          });
+        } catch (error) {
+          console.error('Error loading analytics:', error);
+          alert('Failed to load analytics data');
+        }
+      }
+
+      async function loadAuditLogs() {
+        const auditLogsTableBody = document.getElementById('audit-logs-table-body');
+        
+        try {
+          const data = await getAuditLogs({ page: 1, limit: 20 });
+          
+          if (data.logs && data.logs.length > 0) {
+            auditLogsTableBody.innerHTML = data.logs.map(log => {
+              const timestamp = new Date(log.createdAt).toLocaleString();
+              const detailsJson = JSON.stringify(log.details || {});
+              return `
+                <tr>
+                  <td>${timestamp}</td>
+                  <td>${log.user?.name || 'System'} (${log.user?.email || 'N/A'})</td>
+                  <td>${log.action}</td>
+                  <td>${log.resource}</td>
+                  <td><span class="badge badge-${log.status.toLowerCase()}">${log.status}</span></td>
+                  <td><button class="action-btn btn-view" onclick='alert("Details: ${detailsJson.replace(/'/g, "\\'").replace(/"/g, '\\"')}")'><i class="fas fa-info-circle"></i></button></td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            auditLogsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No audit logs found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading audit logs:', error);
+          auditLogsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading audit logs</td></tr>';
+        }
       }
     </script>
   </body>
