@@ -7,7 +7,7 @@ const BrevoTransport = require('nodemailer-brevo-transport');
 const createTransporter = () => {
   // Use Brevo if API key is configured (recommended for production)
   if (process.env.BREVO_API_KEY) {
-    return nodemailer.createTransporter(
+    return nodemailer.createTransport(
       new BrevoTransport({
         apiKey: process.env.BREVO_API_KEY,
       })
@@ -25,7 +25,7 @@ const createTransporter = () => {
     });
   } else if (process.env.SMTP_HOST) {
     // Generic SMTP configuration
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT || 587,
       secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
@@ -37,7 +37,7 @@ const createTransporter = () => {
   } else {
     // For testing only - logs to console instead of sending
     console.log('WARNING: No email configuration found. Emails will be logged to console.');
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       streamTransport: true,
       newline: 'unix',
       buffer: true,
