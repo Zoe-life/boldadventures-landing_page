@@ -95,10 +95,12 @@ const handleStripeCheckoutCompleted = async (session) => {
       }
     }
 
-    console.log(`✅ Payment verified and completed for booking: ${bookingId}`);
+    console.log(`Payment verified and completed for booking: ${bookingId}`);
   } catch (error) {
     console.error('Error handling checkout completed:', error);
-    throw error; // Re-throw to mark webhook as failed
+    // Re-throw error to trigger webhook retry by payment provider
+    // The Express error handler will catch this and return appropriate status
+    throw error;
   }
 };
 
@@ -248,7 +250,7 @@ const handlePayPalCaptureCompleted = async (resource) => {
       }
     }
 
-    console.log(`✅ PayPal payment verified and completed for order: ${orderId}`);
+    console.log(`PayPal payment verified and completed for order: ${orderId}`);
   } catch (error) {
     console.error('Error handling PayPal capture completed:', error);
     throw error; // Re-throw to mark webhook as failed

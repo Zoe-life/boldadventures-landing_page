@@ -840,6 +840,7 @@
               const status = subscriber.isActive ? 
                 '<span class="badge badge-confirmed">Active</span>' :
                 '<span class="badge badge-cancelled">Inactive</span>';
+              const subscriberId = String(subscriber._id).replace(/[^a-zA-Z0-9]/g, ''); // Sanitize ID
               
               return `
                 <tr>
@@ -847,13 +848,21 @@
                   <td>${status}</td>
                   <td>${date}</td>
                   <td>
-                    <button class="action-btn btn-view" onclick="viewSubscriber('${subscriber._id}')">
+                    <button class="action-btn btn-view" data-subscriber-id="${subscriberId}">
                       <i class="fas fa-eye"></i> View
                     </button>
                   </td>
                 </tr>
               `;
             }).join('');
+
+            // Add event delegation for view buttons
+            subscribersTableBody.addEventListener('click', (e) => {
+              if (e.target.closest('.btn-view')) {
+                const subscriberId = e.target.closest('.btn-view').dataset.subscriberId;
+                viewSubscriber(subscriberId);
+              }
+            });
           } else {
             subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No subscribers found</td></tr>';
           }
@@ -878,7 +887,13 @@
           return;
         }
 
-        const confirmed = confirm(`Are you sure you want to send this newsletter to all active subscribers?\n\nSubject: ${subject}`);
+        // Sanitize subject for display
+        const safeSubject = subject.replace(/[<>"']/g, (char) => {
+          const escapeChars = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+          return escapeChars[char] || char;
+        });
+
+        const confirmed = confirm(`Are you sure you want to send this newsletter to all active subscribers?\n\nSubject: ${safeSubject}`);
         
         if (!confirmed) return;
 

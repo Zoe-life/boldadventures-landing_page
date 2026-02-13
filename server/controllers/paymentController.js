@@ -173,7 +173,7 @@ const verifyStripePayment = async (req, res) => {
         }
       }
 
-      console.log(`✅ Payment verified for booking ${bookingId} by user ${req.user._id}`);
+      console.log(`Payment verified for booking ${bookingId} by user ${req.user._id}`);
 
       res.status(200).json({
         success: true,
@@ -368,7 +368,7 @@ const capturePayPalPayment = async (req, res) => {
       }
     }
 
-    console.log(`✅ PayPal payment captured for booking ${bookingId} by user ${req.user._id}`);
+    console.log(`PayPal payment captured for booking ${bookingId} by user ${req.user._id}`);
 
     res.status(200).json({
       success: true,

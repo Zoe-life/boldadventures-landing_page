@@ -65,7 +65,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 
 ## Key Features
 
-### 🔐 Authentication & User Management
+### Authentication & User Management
 - **Email/Password Registration** with mandatory email verification
 - **Google OAuth 2.0** social login
 - **Password Reset** via secure time-limited email tokens
@@ -74,7 +74,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 - **Profile Management** with secure password changes
 - **Security Notifications** for account changes
 
-### 🎒 Tour & Booking System
+### Tour & Booking System
 - **Tour Browsing** with detailed information
 - **Advanced Search & Filtering** by category, location, and difficulty
 - **Booking Management** with real-time availability
@@ -82,7 +82,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 - **Booking Status Tracking** (Pending, Confirmed, Cancelled, Completed)
 - **Email Confirmations** for all booking updates
 
-### 💳 Payment Processing
+### Payment Processing
 - **Multiple Payment Methods**: Stripe (cards) and PayPal
 - **Secure Payment Verification** with webhook integration
 - **Idempotency Checks** to prevent double-payments
@@ -90,7 +90,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 - **Payment Success Page** with booking summary
 - **Transaction History** for users and admins
 
-### 📧 Email System
+### Email System
 - **SendGrid Integration** (100 free emails/day) with Nodemailer fallback
 - **Welcome Emails** with verification links
 - **Booking Confirmation Emails** with tour details
@@ -99,7 +99,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 - **Password Reset Emails** with secure tokens
 - **Security Notification Emails** for account changes
 
-### 👨‍💼 Admin Dashboard
+### Admin Dashboard
 - **User Management**: View, edit, and manage all users
 - **Tour Management**: Full CRUD operations for tours
 - **Booking Management**: Track and update all bookings
@@ -108,7 +108,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 - **Analytics Dashboard**: Visualize bookings, revenue, and trends
 - **Audit Logs**: Track all administrative actions
 
-### 🔔 Real-Time Features
+### Real-Time Features
 - **Socket.io Integration** for live notifications
 - **Instant Booking Updates**
 - **Real-time Payment Status**

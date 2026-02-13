@@ -28,7 +28,8 @@ const register = async (req, res) => {
       });
     }
 
-    // Create user
+    // Create user with email verification required
+    // Note: Email verification is enforced via middleware on protected routes
     const user = await User.create({
       name,
       email,

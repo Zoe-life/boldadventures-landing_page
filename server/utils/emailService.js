@@ -34,7 +34,7 @@ const createTransporter = () => {
     });
   } else {
     // For testing only - logs to console instead of sending
-    console.log('⚠️  No email configuration found. Emails will be logged to console.');
+    console.log('WARNING: No email configuration found. Emails will be logged to console.');
     return nodemailer.createTransporter({
       streamTransport: true,
       newline: 'unix',
@@ -59,7 +59,7 @@ const sendEmail = async (options) => {
       };
 
       const result = await sgMail.send(msg);
-      console.log('✅ Email sent via SendGrid to:', options.to);
+      console.log('Email sent via SendGrid to:', options.to);
       return { success: true, messageId: result[0].headers['x-message-id'] };
     }
     
@@ -78,7 +78,7 @@ const sendEmail = async (options) => {
     
     // If using stream transport (testing), log the email
     if (info.message) {
-      console.log('📧 Email would be sent:');
+      console.log('Email would be sent:');
       console.log('To:', options.to);
       console.log('Subject:', options.subject);
       console.log('---');
@@ -227,7 +227,7 @@ const sendWelcomeEmail = async (user, verificationUrl) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9f9f9;">
       <div style="background: linear-gradient(135deg, #2caeba 0%, #1a8a95 100%); color: white; padding: 30px; text-align: center;">
-        <h1 style="margin: 0; font-size: 28px;">Welcome to BoldAdventures! 🎉</h1>
+        <h1 style="margin: 0; font-size: 28px;">Welcome to BoldAdventures!</h1>
       </div>
       
       <div style="padding: 30px; background: white;">
@@ -308,7 +308,7 @@ const sendPaymentReceipt = async (payment, user, booking, tour) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9f9f9;">
       <div style="background: #2caeba; color: white; padding: 30px; text-align: center;">
-        <h1 style="margin: 0; font-size: 28px;">Payment Received ✅</h1>
+        <h1 style="margin: 0; font-size: 28px;">Payment Received</h1>
       </div>
       
       <div style="padding: 30px; background: white;">
@@ -327,7 +327,7 @@ const sendPaymentReceipt = async (payment, user, booking, tour) => {
             </tr>
             <tr>
               <td style="padding: 8px 0;"><strong>Amount:</strong></td>
-              <td style="padding: 8px 0;">${payment.amount} ${payment.currency}</td>
+              <td style="padding: 8px 0;">${payment.amount.toLocaleString()} ${payment.currency}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0;"><strong>Payment Method:</strong></td>
@@ -396,7 +396,7 @@ Thank you for your payment! Your transaction has been successfully processed.
 
 Payment Details:
 - Payment ID: ${payment._id}
-- Amount: ${payment.amount} ${payment.currency}
+- Amount: ${payment.amount.toLocaleString()} ${payment.currency}
 - Payment Method: ${payment.paymentMethod.toUpperCase()}
 - Status: ${payment.status.toUpperCase()}
 - Date: ${new Date(payment.createdAt).toLocaleString()}
@@ -495,7 +495,7 @@ const sendSecurityNotification = async (user, notificationType, details = {}) =>
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9f9f9;">
       <div style="background: #ff9800; color: white; padding: 30px; text-align: center;">
-        <h1 style="margin: 0; font-size: 24px;">🔒 Security Notification</h1>
+        <h1 style="margin: 0; font-size: 24px;">Security Notification</h1>
       </div>
       
       <div style="padding: 30px; background: white;">
@@ -513,7 +513,7 @@ const sendSecurityNotification = async (user, notificationType, details = {}) =>
         
         <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0;">
           <p style="margin: 0; font-size: 14px; color: #856404;">
-            <strong>⚠️ If this wasn't you:</strong><br>
+            <strong>WARNING: If this wasn't you:</strong><br>
             Please change your password immediately and contact our support team.
           </p>
         </div>
@@ -536,7 +536,7 @@ ${notification.message}
 
 ${details.timestamp ? `Time: ${new Date(details.timestamp).toLocaleString()}` : ''}
 
-⚠️ If this wasn't you, please change your password immediately and contact our support team.
+WARNING: If this wasn't you, please change your password immediately and contact our support team.
 
 © ${new Date().getFullYear()} BoldAdventures. All rights reserved.
   `;
