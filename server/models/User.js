@@ -110,6 +110,26 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
+// Create password reset token
+userSchema.methods.createPasswordResetToken = function () {
+  const crypto = require('crypto');
+  
+  // Generate random token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  
+  // Hash token and set to passwordResetToken field
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  
+  // Set token expiry (10 minutes)
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  
+  // Return plain token (this is what we send via email)
+  return resetToken;
+};
+
 // Remove password from output
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
