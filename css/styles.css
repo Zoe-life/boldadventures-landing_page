@@ -837,3 +837,428 @@ Book Tour Button
   background: var(--clr-primary-1);
   color: var(--clr-primary-5);
 }
+
+/*
+=============== 
+View Tours Button
+===============
+*/
+.view-tours-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: var(--spacing);
+}
+
+.view-tours-btn:hover {
+  background: var(--clr-primary-1);
+  color: var(--clr-primary-5);
+}
+
+/*
+=============== 
+Tours Modal
+===============
+*/
+.tours-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+}
+
+.tours-modal.show-modal {
+  display: flex;
+}
+
+.tours-modal-content {
+  background: var(--clr-white);
+  border-radius: var(--radius);
+  max-width: 900px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--dark-shadow);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.tours-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--clr-grey-9);
+}
+
+.tours-modal-header h2 {
+  margin: 0;
+  color: var(--clr-primary-5);
+}
+
+.tours-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--clr-grey-5);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tours-modal-close:hover {
+  color: var(--clr-primary-5);
+  transform: rotate(90deg);
+}
+
+.tours-modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-tour-card {
+  background: var(--clr-white);
+  border: 1px solid var(--clr-grey-9);
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+  overflow: hidden;
+  box-shadow: var(--light-shadow);
+  transition: var(--transition);
+}
+
+.modal-tour-card:hover {
+  box-shadow: var(--dark-shadow);
+  transform: translateY(-2px);
+}
+
+.modal-tour-card:last-child {
+  margin-bottom: 0;
+}
+
+.modal-tour-img-container {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.modal-tour-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition);
+}
+
+.modal-tour-card:hover .modal-tour-img {
+  transform: scale(1.05);
+}
+
+.modal-tour-info {
+  padding: 1.5rem;
+}
+
+.modal-tour-info h4 {
+  margin-bottom: 0.75rem;
+  color: var(--clr-grey-1);
+  text-transform: capitalize;
+}
+
+.modal-tour-info p {
+  color: var(--clr-grey-5);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.modal-tour-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--clr-grey-9);
+}
+
+.modal-tour-footer p {
+  margin: 0;
+  color: var(--clr-grey-5);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal-tour-footer i {
+  color: var(--clr-primary-5);
+}
+
+.no-tours {
+  text-align: center;
+  padding: 2rem;
+  color: var(--clr-grey-5);
+  font-size: 1.1rem;
+}
+
+/*
+=============== 
+Responsive Design Improvements
+===============
+*/
+
+/* Small tablets and large phones (landscape) */
+@media screen and (max-width: 768px) {
+  /* Navbar improvements */
+  .nav-center {
+    padding: 1rem;
+  }
+
+  .nav-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .nav-links {
+    height: auto;
+  }
+
+  .nav-links li {
+    padding: 0.75rem 0;
+  }
+
+  /* Hero section */
+  .hero {
+    min-height: 70vh;
+  }
+
+  .hero-banner h1 {
+    font-size: 2rem;
+  }
+
+  .hero-banner p {
+    font-size: 1rem;
+    max-width: 90%;
+  }
+
+  /* Services section */
+  .services-center {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .service {
+    max-width: 100%;
+  }
+
+  .service-text {
+    font-size: 0.9rem;
+  }
+
+  /* Featured tours */
+  .featured-center {
+    grid-template-columns: 1fr;
+  }
+
+  .tour-card {
+    max-width: 100%;
+  }
+
+  /* Gallery */
+  .gallery-center {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  /* Contact form */
+  .contact-form {
+    flex-direction: column;
+  }
+
+  .contact-form input {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .contact-form .btn-submit {
+    width: 100%;
+  }
+
+  /* Footer */
+  .footer-links,
+  .footer-icons {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .footer-links li,
+  .footer-icons li {
+    margin: 0;
+  }
+
+  /* Modal improvements */
+  .tours-modal {
+    padding: 1rem 0.5rem;
+  }
+
+  .tours-modal-content {
+    max-height: 90vh;
+  }
+
+  .tours-modal-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .tours-modal-body {
+    padding: 1.5rem;
+  }
+
+  .modal-tour-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Mobile phones (portrait) */
+@media screen and (max-width: 480px) {
+  /* Typography */
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  /* Hero */
+  .hero {
+    min-height: 60vh;
+  }
+
+  .hero-banner {
+    padding: 0 1.5rem;
+  }
+
+  .hero-banner h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero-banner p {
+    font-size: 0.9rem;
+  }
+
+  /* Section padding */
+  .section {
+    padding: 3rem 0;
+  }
+
+  .section-center {
+    padding: 0 1rem;
+  }
+
+  /* Services */
+  .service-icon {
+    font-size: 2rem;
+  }
+
+  .service-title {
+    font-size: 1rem;
+  }
+
+  .service-text {
+    font-size: 0.85rem;
+  }
+
+  /* Tours */
+  .tour-info {
+    padding: 1rem;
+  }
+
+  .tour-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  /* About section */
+  .about-center {
+    grid-template-columns: 1fr;
+  }
+
+  .about-img {
+    height: 250px;
+  }
+
+  /* Modal */
+  .tours-modal {
+    padding: 0.5rem;
+  }
+
+  .tours-modal-header {
+    padding: 1rem;
+  }
+
+  .tours-modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .tours-modal-body {
+    padding: 1rem;
+  }
+
+  .modal-tour-img-container {
+    height: 150px;
+  }
+
+  .modal-tour-info {
+    padding: 1rem;
+  }
+
+  .modal-tour-card {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Extra small devices */
+@media screen and (max-width: 360px) {
+  .hero-banner h1 {
+    font-size: 1.5rem;
+  }
+
+  .hero-banner p {
+    font-size: 0.8rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .service-icon {
+    font-size: 1.75rem;
+  }
+}

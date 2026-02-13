@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - BoldAdventures</title>
+    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="./fontawesome-free-5.12.1-web/css/all.min.css" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <style>
+      .admin-container {
+        min-height: 100vh;
+        background: var(--clr-grey-10);
+        padding: 2rem 0;
+      }
+
+      .admin-header {
+        background: var(--clr-primary-5);
+        color: var(--clr-white);
+        padding: 1.5rem 0;
+        margin-bottom: 2rem;
+        box-shadow: var(--dark-shadow);
+      }
+
+      .admin-header-content {
+        max-width: 1170px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .admin-header h1 {
+        margin: 0;
+        color: var(--clr-white);
+        font-size: 1.75rem;
+      }
+
+      .admin-nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .admin-nav a {
+        color: var(--clr-white);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        transition: var(--transition);
+      }
+
+      .admin-nav a:hover,
+      .admin-nav a.active {
+        background: var(--clr-primary-7);
+      }
+
+      .admin-content {
+        max-width: 1170px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      .admin-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .admin-tab {
+        padding: 0.75rem 1.5rem;
+        background: var(--clr-white);
+        border: 2px solid var(--clr-grey-9);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-weight: 600;
+        color: var(--clr-grey-5);
+      }
+
+      .admin-tab:hover {
+        border-color: var(--clr-primary-5);
+        color: var(--clr-primary-5);
+      }
+
+      .admin-tab.active {
+        background: var(--clr-primary-5);
+        color: var(--clr-white);
+        border-color: var(--clr-primary-5);
+      }
+
+      .admin-panel {
+        display: none;
+      }
+
+      .admin-panel.active {
+        display: block;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--clr-white);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--light-shadow);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .stat-icon {
+        font-size: 2.5rem;
+        color: var(--clr-primary-5);
+        width: 60px;
+        height: 60px;
+        background: var(--clr-primary-10);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .stat-info h3 {
+        margin: 0;
+        font-size: 2rem;
+        color: var(--clr-grey-1);
+      }
+
+      .stat-info p {
+        margin: 0;
+        color: var(--clr-grey-5);
+        font-size: 0.875rem;
+      }
+
+      .admin-card {
+        background: var(--clr-white);
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--light-shadow);
+        margin-bottom: 2rem;
+      }
+
+      .admin-card h2 {
+        margin-top: 0;
+        color: var(--clr-primary-5);
+        border-bottom: 2px solid var(--clr-grey-9);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow-x: auto;
+        display: block;
+      }
+
+      .data-table thead {
+        background: var(--clr-grey-10);
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--clr-grey-9);
+      }
+
+      .data-table th {
+        font-weight: 700;
+        color: var(--clr-grey-1);
+      }
+
+      .data-table tr:hover {
+        background: var(--clr-grey-10);
+      }
+
+      .action-btn {
+        padding: 0.35rem 0.75rem;
+        margin: 0 0.25rem;
+        border: none;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.8rem;
+      }
+
+      .btn-edit {
+        background: var(--clr-primary-5);
+        color: var(--clr-white);
+      }
+
+      .btn-edit:hover {
+        background: var(--clr-primary-3);
+      }
+
+      .btn-delete {
+        background: #dc3545;
+        color: var(--clr-white);
+      }
+
+      .btn-delete:hover {
+        background: #c82333;
+      }
+
+      .btn-view {
+        background: var(--clr-grey-5);
+        color: var(--clr-white);
+      }
+
+      .btn-view:hover {
+        background: var(--clr-grey-3);
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--clr-grey-1);
+        font-weight: 600;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--clr-grey-9);
+        border-radius: var(--radius);
+        font-size: 1rem;
+        font-family: var(--ff-primary);
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--clr-primary-5);
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .badge-user {
+        background: var(--clr-primary-10);
+        color: var(--clr-primary-5);
+      }
+
+      .badge-guide {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .badge-admin {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .badge-pending {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .badge-confirmed {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .badge-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      /* Responsive */
+      @media screen and (max-width: 768px) {
+        .admin-header-content {
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .admin-nav {
+          flex-direction: column;
+          gap: 0.5rem;
+          width: 100%;
+        }
+
+        .admin-nav a {
+          width: 100%;
+          text-align: center;
+        }
+
+        .admin-content {
+          padding: 0 1rem;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .data-table {
+          font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+          padding: 0.5rem;
+        }
+
+        .action-btn {
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        .admin-header h1 {
+          font-size: 1.5rem;
+        }
+
+        .admin-tabs {
+          flex-direction: column;
+        }
+
+        .admin-tab {
+          width: 100%;
+          text-align: center;
+        }
+
+        .data-table {
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-container">
+      <!-- Admin Header -->
+      <header class="admin-header">
+        <div class="admin-header-content">
+          <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
+          <nav class="admin-nav">
+            <a href="index.html"><i class="fas fa-home"></i> Home</a>
+            <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </nav>
+        </div>
+      </header>
+
+      <!-- Admin Content -->
+      <div class="admin-content">
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-users">0</h3>
+              <p>Total Users</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-tours">0</h3>
+              <p>Total Tours</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-bookings">0</h3>
+              <p>Total Bookings</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-subscribers">0</h3>
+              <p>Newsletter Subscribers</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="users">
+            <i class="fas fa-users"></i> Users
+          </button>
+          <button class="admin-tab" data-tab="tours">
+            <i class="fas fa-map-marked-alt"></i> Tours
+          </button>
+          <button class="admin-tab" data-tab="bookings">
+            <i class="fas fa-calendar-check"></i> Bookings
+          </button>
+          <button class="admin-tab" data-tab="subscribers">
+            <i class="fas fa-envelope"></i> Subscribers
+          </button>
+        </div>
+
+        <!-- Users Panel -->
+        <div class="admin-panel active" id="users-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-users"></i> User Management</h2>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 2rem;">
+                    Loading users...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tours Panel -->
+        <div class="admin-panel" id="tours-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-map-marked-alt"></i> Tour Management</h2>
+            <button class="btn" id="add-tour-btn" style="margin-bottom: 1rem;">
+              <i class="fas fa-plus"></i> Add New Tour
+            </button>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Location</th>
+                  <th>Duration</th>
+                  <th>Price</th>
+                  <th>Featured</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tours-table-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 2rem;">
+                    Loading tours...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Bookings Panel -->
+        <div class="admin-panel" id="bookings-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-calendar-check"></i> Booking Management</h2>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Tour</th>
+                  <th>Date</th>
+                  <th>People</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-table-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2rem;">
+                    Loading bookings...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Subscribers Panel -->
+        <div class="admin-panel" id="subscribers-panel">
+          <div class="admin-card">
+            <h2><i class="fas fa-envelope"></i> Newsletter Subscribers</h2>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Subscribed Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="subscribers-table-body">
+                <tr>
+                  <td colspan="4" style="text-align: center; padding: 2rem;">
+                    Loading subscribers...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/api.js"></script>
+    <script>
+      // Check if user is admin
+      document.addEventListener('DOMContentLoaded', async () => {
+        // Check authentication
+        if (!isLoggedIn()) {
+          alert('Please login to access the admin dashboard');
+          window.location.href = '/login.html';
+          return;
+        }
+
+        try {
+          const user = await getCurrentUser();
+          if (user.role !== 'admin') {
+            alert('Access denied. Admin privileges required.');
+            window.location.href = '/index.html';
+            return;
+          }
+
+          // Load dashboard data
+          loadDashboardData();
+        } catch (error) {
+          alert('Error loading user data. Please login again.');
+          window.location.href = '/login.html';
+        }
+
+        // Setup tab switching
+        const tabs = document.querySelectorAll('.admin-tab');
+        const panels = document.querySelectorAll('.admin-panel');
+
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const targetPanel = tab.getAttribute('data-tab');
+
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Update active panel
+            panels.forEach(p => p.classList.remove('active'));
+            document.getElementById(`${targetPanel}-panel`).classList.add('active');
+          });
+        });
+
+        // Logout
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+          e.preventDefault();
+          await logout();
+          window.location.href = '/index.html';
+        });
+      });
+
+      // Load dashboard statistics and data
+      async function loadDashboardData() {
+        // Mock data - Replace with actual API calls when backend is connected
+        document.getElementById('total-users').textContent = '156';
+        document.getElementById('total-tours').textContent = '24';
+        document.getElementById('total-bookings').textContent = '89';
+        document.getElementById('total-subscribers').textContent = '342';
+
+        // Load mock users
+        loadUsers();
+        loadTours();
+        loadBookings();
+        loadSubscribers();
+      }
+
+      function loadUsers() {
+        const usersTableBody = document.getElementById('users-table-body');
+        const mockUsers = [
+          { name: 'John Doe', email: 'john@example.com', role: 'user', active: true },
+          { name: 'Jane Smith', email: 'jane@example.com', role: 'guide', active: true },
+          { name: 'Admin User', email: 'admin@boldadventures.com', role: 'admin', active: true },
+        ];
+
+        usersTableBody.innerHTML = mockUsers.map(user => `
+          <tr>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td><span class="badge badge-${user.role}">${user.role}</span></td>
+            <td>${user.active ? 'Active' : 'Inactive'}</td>
+            <td>
+              <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="action-btn btn-view" onclick="alert('View functionality coming soon')">
+                <i class="fas fa-eye"></i> View
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      function loadTours() {
+        const toursTableBody = document.getElementById('tours-table-body');
+        const mockTours = [
+          { title: 'Tibet Adventure', category: 'hiking', location: 'China', duration: '6 days', price: 'Ksh.340,000', featured: true },
+          { title: 'Best of Java', category: 'hiking', location: 'Indonesia', duration: '11 days', price: 'Ksh.200,000', featured: false },
+          { title: 'Explore Hong Kong', category: 'biking', location: 'Hong Kong', duration: '8 days', price: 'Ksh.300,000', featured: true },
+        ];
+
+        toursTableBody.innerHTML = mockTours.map(tour => `
+          <tr>
+            <td>${tour.title}</td>
+            <td>${tour.category}</td>
+            <td>${tour.location}</td>
+            <td>${tour.duration}</td>
+            <td>${tour.price}</td>
+            <td>${tour.featured ? '⭐ Yes' : 'No'}</td>
+            <td>
+              <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="action-btn btn-delete" onclick="if(confirm('Delete this tour?')) alert('Delete functionality coming soon')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      function loadBookings() {
+        const bookingsTableBody = document.getElementById('bookings-table-body');
+        const mockBookings = [
+          { user: 'John Doe', tour: 'Tibet Adventure', date: '2024-03-15', people: 2, status: 'confirmed' },
+          { user: 'Jane Smith', tour: 'Best of Java', date: '2024-04-20', people: 4, status: 'pending' },
+          { user: 'Bob Johnson', tour: 'Explore Hong Kong', date: '2024-05-10', people: 1, status: 'confirmed' },
+        ];
+
+        bookingsTableBody.innerHTML = mockBookings.map(booking => `
+          <tr>
+            <td>${booking.user}</td>
+            <td>${booking.tour}</td>
+            <td>${booking.date}</td>
+            <td>${booking.people}</td>
+            <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
+            <td>
+              <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
+                <i class="fas fa-eye"></i> View
+              </button>
+              <button class="action-btn btn-edit" onclick="alert('Update status coming soon')">
+                <i class="fas fa-edit"></i> Update
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      function loadSubscribers() {
+        const subscribersTableBody = document.getElementById('subscribers-table-body');
+        const mockSubscribers = [
+          { email: 'subscriber1@example.com', status: 'active', date: '2024-01-15' },
+          { email: 'subscriber2@example.com', status: 'active', date: '2024-02-20' },
+          { email: 'subscriber3@example.com', status: 'inactive', date: '2024-03-10' },
+        ];
+
+        subscribersTableBody.innerHTML = mockSubscribers.map(sub => `
+          <tr>
+            <td>${sub.email}</td>
+            <td>${sub.status}</td>
+            <td>${sub.date}</td>
+            <td>
+              <button class="action-btn btn-view" onclick="alert('View subscriber details coming soon')">
+                <i class="fas fa-eye"></i> View
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    </script>
+  </body>
+</html>

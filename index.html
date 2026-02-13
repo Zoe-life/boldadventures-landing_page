@@ -160,7 +160,7 @@
       <!-- end of section-title -->
       <div class="section-center services-center">
         <!-- single service -->
-        <article class="service">
+        <article class="service" data-service-category="adventure-package">
           <span class="service-icon">
             <i class="fas fa-wallet fa-fw"></i>
           </span>
@@ -169,11 +169,12 @@
             <p class="service-text">
               Our adventure packages offer the ultimate combination of hiking and biking, allowing you to experience the best of both worlds. Explore stunning landscapes on foot, then hop on a bike to cover more ground and see even more. Our packages are carefully designed to provide a balanced and exciting experience, ensuring that you make the most of your adventure. Whether you're seeking a relaxing getaway or an adrenaline-pumping challenge, our adventure packages have something to offer everyone.
             </p>
+            <button class="btn view-tours-btn" data-category="adventure-package">View Tours</button>
           </div>
         </article>
         <!-- enf of single service -->
         <!-- single service -->
-        <article class="service">
+        <article class="service" data-service-category="biking">
           <span class="service-icon">
             <i class="fas fa-tree fa-fw"></i>
           </span>
@@ -182,11 +183,12 @@
             <p class="service-text">
               Our endless biking adventures are perfect for those who crave the freedom and exhilaration of two-wheeled exploration. Whether you prefer scenic road biking or challenging mountain trails, we have the perfect route for you. Explore picturesque landscapes, experience the thrill of downhill descents, and discover hidden gems along the way. Our biking tours are designed to cater to all levels of riders, ensuring a memorable and enjoyable experience for everyone.
             </p>
+            <button class="btn view-tours-btn" data-category="biking">View Tours</button>
           </div>
         </article>
         <!-- enf of single service -->
         <!-- single service -->
-        <article class="service">
+        <article class="service" data-service-category="hiking">
           <span class="service-icon">
             <i class="fas fa-socks fa-fw"></i>
           </span>
@@ -202,6 +204,7 @@
               flora and fauna, and discover hidden gems that you may have missed
               on your own.
             </p>
+            <button class="btn view-tours-btn" data-category="hiking">View Tours</button>
           </div>
         </article>
         <!-- enf of single service -->
@@ -490,6 +493,21 @@
         all rights reserved
       </p>
     </footer>
+    <!-- Tours Modal -->
+    <div id="tours-modal" class="tours-modal">
+      <div class="tours-modal-content">
+        <div class="tours-modal-header">
+          <h2 id="tours-modal-title">Tours</h2>
+          <button class="tours-modal-close" id="close-tours-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="tours-modal-body" id="tours-modal-body">
+          <!-- Tours will be loaded here dynamically -->
+        </div>
+      </div>
+    </div>
+
     <!-- js -->
     <script src="./js/api.js"></script>
     <script src="./js/app.js"></script>
