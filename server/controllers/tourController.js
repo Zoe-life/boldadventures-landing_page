@@ -1,7 +1,7 @@
 const Tour = require('../models/Tour');
 
 /**
- * @desc    Get all tours
+ * @desc    Get all tours with advanced filtering
  * @route   GET /api/tours
  * @access  Public
  */
@@ -16,18 +16,54 @@ const getTours = async (req, res) => {
       maxPrice,
       featured,
       sort = '-createdAt',
+      search,
+      country,
+      minRating,
+      duration,
     } = req.query;
 
     // Build query
     const query = { isActive: true };
 
+    // Category filter
     if (category) query.category = category;
+    
+    // Difficulty filter
     if (difficulty) query.difficulty = difficulty;
+    
+    // Featured filter
     if (featured !== undefined) query.featured = featured === 'true';
+    
+    // Price range filter
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
       if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    // Rating filter
+    if (minRating) {
+      query.rating = { $gte: Number(minRating) };
+    }
+
+    // Duration filter
+    if (duration) {
+      query.duration = Number(duration);
+    }
+
+    // Location/Country filter
+    if (country) {
+      query['location.country'] = { $regex: country, $options: 'i' };
+    }
+
+    // Search filter (search in title, description, and location)
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { 'location.country': { $regex: search, $options: 'i' } },
+        { 'location.city': { $regex: search, $options: 'i' } },
+      ];
     }
 
     // Execute query

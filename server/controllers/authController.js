@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const User = require('../models/User');
 const {
   generateAccessToken,
@@ -6,6 +7,7 @@ const {
   setTokenCookies,
   clearTokenCookies,
 } = require('../utils/jwt');
+const { sendPasswordResetEmail } = require('../utils/email');
 
 /**
  * @desc    Register new user
@@ -380,6 +382,116 @@ const googleCallback = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Request password reset
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.status(200).json({
+        success: true,
+        message: 'If an account with that email exists, a password reset link has been sent',
+      });
+    }
+
+    // Generate reset token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset URL
+    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5000'}/reset-password.html?token=${resetToken}`;
+
+    try {
+      // Send email
+      await sendPasswordResetEmail(user.email, resetUrl, user.name);
+
+      res.status(200).json({
+        success: true,
+        message: 'If an account with that email exists, a password reset link has been sent',
+      });
+    } catch (emailError) {
+      // If email fails, clear reset token
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      console.error('Email sending error:', emailError);
+      return res.status(500).json({
+        success: false,
+        message: 'Error sending password reset email. Please try again later.',
+      });
+    }
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Password reset request failed',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Reset password
+ * @route   POST /api/auth/reset-password/:token
+ * @access  Public
+ */
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    // Hash token to compare with stored hashed token
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Find user with valid token that hasn't expired
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired password reset token',
+      });
+    }
+
+    // Set new password
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    
+    // Clear all refresh tokens for security
+    user.refreshTokens = [];
+    
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successful. Please log in with your new password.',
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Password reset failed',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -389,4 +501,6 @@ module.exports = {
   updateProfile,
   changePassword,
   googleCallback,
+  forgotPassword,
+  resetPassword,
 };

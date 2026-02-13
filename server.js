@@ -7,6 +7,8 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const path = require('path');
 const passport = require('passport');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const connectDB = require('./server/config/database');
 const { errorHandler, notFound } = require('./server/middleware/errorHandler');
@@ -19,6 +21,7 @@ const {
   securityHeaders,
 } = require('./server/middleware/security');
 const { csrfErrorHandler } = require('./server/middleware/csrf');
+const { initializeSocket } = require('./server/utils/notification');
 
 // Import routes
 const authRoutes = require('./server/routes/authRoutes');
@@ -31,9 +34,26 @@ const csrfRoutes = require('./server/routes/csrfRoutes');
 const webhookRoutes = require('./server/routes/webhookRoutes');
 const adminRoutes = require('./server/routes/adminRoutes');
 const guideRoutes = require('./server/routes/guideRoutes');
+const reviewRoutes = require('./server/routes/reviewRoutes');
+const uploadRoutes = require('./server/routes/uploadRoutes');
+const notificationRoutes = require('./server/routes/notificationRoutes');
 
 // Initialize express
 const app = express();
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:5000',
+    credentials: true,
+  },
+});
+
+// Initialize socket for notifications
+initializeSocket(io);
 
 // Connect to database
 connectDB();
@@ -134,6 +154,9 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/currency', currencyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/guide', guideRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -160,7 +183,7 @@ app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
 
