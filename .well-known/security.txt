@@ -1,0 +1,22 @@
+Contact: mailto:security@boldadventures.com
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://boldadventures.com/.well-known/security.txt
+Policy: https://boldadventures.com/security-policy
+
+# Security Policy
+# 
+# If you discover a security vulnerability in our application,
+# please report it to us responsibly by emailing security@boldadventures.com
+# 
+# Please include:
+# - Description of the vulnerability
+# - Steps to reproduce
+# - Potential impact
+# - Suggested fix (if any)
+# 
+# We will acknowledge receipt within 48 hours and work with you to
+# resolve the issue promptly.
+# 
+# Do not publicly disclose the vulnerability until we have had a
+# chance to address it.
