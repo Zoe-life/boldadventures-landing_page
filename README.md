@@ -11,7 +11,11 @@ This repository contains the **production-ready full-stack source code** for Bol
 - Multiple pages:
   - `index.html` - Main landing page
   - `login.html` - Authentication interface
+  - `admin.html` - Admin dashboard with full management capabilities
   - `payment.html` - Payment processing page
+  - `payment-success.html` - Payment confirmation and receipt display
+  - `verify-email.html` - Email verification page
+  - `reset-password.html` - Password reset page
   - `security-demo.html` - Security features demonstration
 
 ### Backend
@@ -20,7 +24,9 @@ This repository contains the **production-ready full-stack source code** for Bol
 - **JWT (jsonwebtoken)** - Token-based authentication
 - **bcryptjs** - Password hashing (12 rounds)
 - **Passport.js** - Authentication middleware with Google OAuth 2.0
-- **Stripe & PayPal** - Payment gateway integrations
+- **Stripe & PayPal** - Payment gateway integrations with webhook verification
+- **SendGrid** - Email service for transactional emails (with Nodemailer fallback)
+- **Socket.io** - Real-time notifications
 - **Axios** - HTTP client for external API calls
 
 ### Security Packages
@@ -38,20 +44,74 @@ This repository contains the **production-ready full-stack source code** for Bol
 ### Security Features (Production-Ready)
 - **JWT-based authentication** with dual-token system (access & refresh tokens)
 - **Role-based access control** (User, Guide, Admin)
+- **Email verification** - Mandatory email verification for new users
 - **Password security** with bcrypt hashing (12 rounds)
+- **Password reset flow** - Secure time-limited tokens via email
 - **Session management** with httpOnly secure cookies
 - **XSS Protection**: Enhanced CSP, input validation, security headers
 - **CSRF Protection**: Double submit cookie pattern with csrf-csrf
 - **NoSQL Injection Prevention**: MongoDB sanitization with express-mongo-sanitize
 - **DDoS Protection**: Multi-layer rate limiting, progressive slowdown, HPP protection
-- **Payment Security**: Webhook verification, transaction logging, idempotency keys
+- **Payment Security**: Webhook verification, idempotency checks, transaction logging
+- **Payment Verification**: Prevent double-payments with status validation
 - **Google OAuth 2.0**: Social authentication integration
 - **Input Validation**: Comprehensive validation on all endpoints
 - **Request Size Limits**: 10MB maximum body size
 - **Security Headers**: Full Helmet.js configuration
+- **Security Notifications**: Email alerts for password changes and security events
 - **Nginx Reverse Proxy Support**: Optional additional security layer
 
-For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) and [SECURITY_IMPLEMENTATION.md](./SECURITY_IMPLEMENTATION.md)
+For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) and [docs/SECURITY_IMPLEMENTATION.md](./docs/SECURITY_IMPLEMENTATION.md)
+
+## Key Features
+
+### Authentication & User Management
+- **Email/Password Registration** with mandatory email verification
+- **Google OAuth 2.0** social login
+- **Password Reset** via secure time-limited email tokens
+- **Email Verification** system with resend capability
+- **Role-Based Access Control** (User, Guide, Admin)
+- **Profile Management** with secure password changes
+- **Security Notifications** for account changes
+
+### Tour & Booking System
+- **Tour Browsing** with detailed information
+- **Advanced Search & Filtering** by category, location, and difficulty
+- **Booking Management** with real-time availability
+- **Multi-participant Bookings**
+- **Booking Status Tracking** (Pending, Confirmed, Cancelled, Completed)
+- **Email Confirmations** for all booking updates
+
+### Payment Processing
+- **Multiple Payment Methods**: Stripe (cards) and PayPal
+- **Secure Payment Verification** with webhook integration
+- **Idempotency Checks** to prevent double-payments
+- **Automatic Email Receipts** with payment details
+- **Payment Success Page** with booking summary
+- **Transaction History** for users and admins
+
+### Email System
+- **SendGrid Integration** (100 free emails/day) with Nodemailer fallback
+- **Welcome Emails** with verification links
+- **Booking Confirmation Emails** with tour details
+- **Payment Receipt Emails** with transaction information
+- **Newsletter Distribution** to active subscribers
+- **Password Reset Emails** with secure tokens
+- **Security Notification Emails** for account changes
+
+### Admin Dashboard
+- **User Management**: View, edit, and manage all users
+- **Tour Management**: Full CRUD operations for tours
+- **Booking Management**: Track and update all bookings
+- **Payment History**: View all transactions
+- **Newsletter Management**: Send newsletters to all subscribers
+- **Analytics Dashboard**: Visualize bookings, revenue, and trends
+- **Audit Logs**: Track all administrative actions
+
+### Real-Time Features
+- **Socket.io Integration** for live notifications
+- **Instant Booking Updates**
+- **Real-time Payment Status**
 
 ## Getting Started
 
@@ -83,7 +143,8 @@ Edit the `.env` file with your configuration. See [docs/ENV_SETUP.md](./docs/ENV
 - JWT secrets
 - Google OAuth credentials
 - Payment gateway API keys (Stripe & PayPal)
-- Email service credentials
+- Email service credentials (SendGrid recommended)
+- Cloudinary credentials (optional, for image uploads)
 
 4. Start MongoDB (if running locally):
 ```bash

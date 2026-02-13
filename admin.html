@@ -517,6 +517,42 @@
         <div class="admin-panel" id="subscribers-panel">
           <div class="admin-card">
             <h2><i class="fas fa-envelope"></i> Newsletter Subscribers</h2>
+            
+            <!-- Newsletter Sending Form -->
+            <div style="background: var(--clr-grey-10); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 2rem;">
+              <h3 style="margin-top: 0; color: var(--clr-primary-5);">
+                <i class="fas fa-paper-plane"></i> Send Newsletter
+              </h3>
+              <form id="newsletter-form">
+                <div class="form-group">
+                  <label for="newsletter-subject">Subject *</label>
+                  <input 
+                    type="text" 
+                    id="newsletter-subject" 
+                    placeholder="Enter newsletter subject" 
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="newsletter-content">Content (HTML) *</label>
+                  <textarea 
+                    id="newsletter-content" 
+                    placeholder="Enter newsletter content (HTML supported)" 
+                    required
+                    style="min-height: 200px;"
+                  ></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                  <button type="submit" class="btn-edit" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-paper-plane"></i> Send to All Subscribers
+                  </button>
+                  <button type="button" id="preview-newsletter-btn" class="btn-view" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-eye"></i> Preview
+                  </button>
+                </div>
+              </form>
+            </div>
+
             <table class="data-table">
               <thead>
                 <tr>
@@ -790,13 +826,145 @@
         const subscribersTableBody = document.getElementById('subscribers-table-body');
         
         try {
-          // Note: We need to add a subscribers endpoint in the backend if it doesn't exist
-          // For now, we'll show a placeholder
-          subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Subscribers data will be loaded from API</td></tr>';
+          const response = await fetch('/api/newsletter/subscribers', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+
+          const data = await response.json();
+          
+          if (data.success && data.data.subscribers.length > 0) {
+            subscribersTableBody.innerHTML = data.data.subscribers.map(subscriber => {
+              const date = new Date(subscriber.subscribedAt).toLocaleDateString();
+              const status = subscriber.isActive ? 
+                '<span class="badge badge-confirmed">Active</span>' :
+                '<span class="badge badge-cancelled">Inactive</span>';
+              const subscriberId = String(subscriber._id).replace(/[^a-zA-Z0-9]/g, ''); // Sanitize ID
+              
+              return `
+                <tr>
+                  <td>${subscriber.email}</td>
+                  <td>${status}</td>
+                  <td>${date}</td>
+                  <td>
+                    <button class="action-btn btn-view" data-subscriber-id="${subscriberId}">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+
+            // Add event delegation for view buttons
+            subscribersTableBody.addEventListener('click', (e) => {
+              if (e.target.closest('.btn-view')) {
+                const subscriberId = e.target.closest('.btn-view').dataset.subscriberId;
+                viewSubscriber(subscriberId);
+              }
+            });
+          } else {
+            subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No subscribers found</td></tr>';
+          }
         } catch (error) {
           console.error('Error loading subscribers:', error);
           subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Error loading subscribers</td></tr>';
         }
+      }
+
+      // Newsletter sending functionality
+      const newsletterForm = document.getElementById('newsletter-form');
+      const previewNewsletterBtn = document.getElementById('preview-newsletter-btn');
+
+      newsletterForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const subject = document.getElementById('newsletter-subject').value;
+        const content = document.getElementById('newsletter-content').value;
+
+        if (!subject || !content) {
+          alert('Please fill in both subject and content');
+          return;
+        }
+
+        // Sanitize subject for display
+        const safeSubject = subject.replace(/[<>"']/g, (char) => {
+          const escapeChars = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+          return escapeChars[char] || char;
+        });
+
+        const confirmed = confirm(`Are you sure you want to send this newsletter to all active subscribers?\n\nSubject: ${safeSubject}`);
+        
+        if (!confirmed) return;
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+        try {
+          const csrfResponse = await fetch('/api/csrf-token');
+          const csrfData = await csrfResponse.json();
+
+          const response = await fetch('/api/newsletter/send', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfData.token,
+            },
+            credentials: 'include',
+            body: JSON.stringify({ subject, content }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            alert(`Newsletter sent successfully!\n\nSuccessful: ${data.data.successful}\nFailed: ${data.data.failed}\nTotal: ${data.data.total}`);
+            
+            // Clear form
+            document.getElementById('newsletter-subject').value = '';
+            document.getElementById('newsletter-content').value = '';
+          } else {
+            alert('Failed to send newsletter: ' + (data.message || 'Unknown error'));
+          }
+        } catch (error) {
+          console.error('Newsletter send error:', error);
+          alert('Failed to send newsletter: ' + error.message);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      });
+
+      previewNewsletterBtn.addEventListener('click', () => {
+        const content = document.getElementById('newsletter-content').value;
+        
+        if (!content) {
+          alert('Please enter content to preview');
+          return;
+        }
+
+        const previewWindow = window.open('', 'Newsletter Preview', 'width=600,height=800');
+        previewWindow.document.write(`
+          <html>
+            <head>
+              <title>Newsletter Preview</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+              </style>
+            </head>
+            <body>
+              <h2>Preview</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px;">
+                ${content}
+              </div>
+            </body>
+          </html>
+        `);
+      });
+
+      function viewSubscriber(id) {
+        alert('Subscriber details functionality coming soon');
       }
 
       function showUpdateStatusModal(bookingId, currentStatus) {

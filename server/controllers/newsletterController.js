@@ -1,4 +1,5 @@
 const Newsletter = require('../models/Newsletter');
+const { sendNewsletterEmail } = require('../utils/emailService');
 
 /**
  * @desc    Subscribe to newsletter
@@ -128,8 +129,57 @@ const getSubscribers = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Send newsletter to all active subscribers
+ * @route   POST /api/newsletter/send
+ * @access  Private (Admin only)
+ */
+const sendNewsletter = async (req, res) => {
+  try {
+    const { subject, content } = req.body;
+
+    if (!subject || !content) {
+      return res.status(400).json({
+        success: false,
+        message: 'Subject and content are required',
+      });
+    }
+
+    // Get all active subscribers
+    const subscribers = await Newsletter.find({ isActive: true });
+
+    if (subscribers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No active subscribers found',
+      });
+    }
+
+    // Send newsletter to all subscribers
+    const result = await sendNewsletterEmail(subscribers, subject, content);
+
+    res.status(200).json({
+      success: true,
+      message: `Newsletter sent to ${result.successful} out of ${result.total} subscribers`,
+      data: {
+        successful: result.successful,
+        failed: result.failed,
+        total: result.total,
+      },
+    });
+  } catch (error) {
+    console.error('Send newsletter error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send newsletter',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   subscribe,
   unsubscribe,
   getSubscribers,
+  sendNewsletter,
 };

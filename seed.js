@@ -134,7 +134,7 @@ const seedData = async () => {
 
     await Tour.insertMany(tours);
 
-    console.log('✅ Seed data created successfully!');
+    console.log('Seed data created successfully!');
     console.log('\nTest Users:');
     console.log('Admin: admin@boldadventures.com / Admin123!');
     console.log('Guide: guide@boldadventures.com / Guide123!');

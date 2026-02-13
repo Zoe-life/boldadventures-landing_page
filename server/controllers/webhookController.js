@@ -1,5 +1,6 @@
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
+const { sendPaymentReceipt, sendBookingConfirmation } = require('../utils/emailService');
 
 /**
  * @desc    Handle Stripe webhook events
@@ -55,25 +56,51 @@ const handleStripeCheckoutCompleted = async (session) => {
       return;
     }
 
+    // Check if payment already processed (idempotency)
+    const existingPayment = await Payment.findOne({ 
+      stripeSessionId: session.id,
+      status: 'completed'
+    });
+
+    if (existingPayment) {
+      console.log(`Payment already processed for session: ${session.id}`);
+      return;
+    }
+
     // Update payment record
-    await Payment.findOneAndUpdate(
+    const payment = await Payment.findOneAndUpdate(
       { stripeSessionId: session.id },
       {
         status: 'completed',
         paymentDate: new Date(),
         stripePaymentIntentId: session.payment_intent,
-      }
-    );
+      },
+      { new: true }
+    ).populate('user').populate('booking');
 
     // Update booking
-    await Booking.findByIdAndUpdate(bookingId, {
+    const booking = await Booking.findByIdAndUpdate(bookingId, {
       paymentStatus: 'paid',
       status: 'confirmed',
-    });
+    }, { new: true }).populate('tour');
 
-    console.log(`Payment completed for booking: ${bookingId}`);
+    // Send confirmation emails
+    if (payment && booking && payment.user && booking.tour) {
+      try {
+        await sendPaymentReceipt(payment, payment.user, booking, booking.tour);
+        await sendBookingConfirmation(booking, payment.user, booking.tour);
+      } catch (emailError) {
+        console.error('Failed to send confirmation emails:', emailError);
+        // Don't fail webhook processing if emails fail
+      }
+    }
+
+    console.log(`Payment verified and completed for booking: ${bookingId}`);
   } catch (error) {
     console.error('Error handling checkout completed:', error);
+    // Re-throw error to trigger webhook retry by payment provider
+    // The Express error handler will catch this and return appropriate status
+    throw error;
   }
 };
 
@@ -179,18 +206,54 @@ const handlePayPalCaptureCompleted = async (resource) => {
       return;
     }
 
+    // Check if payment already processed (idempotency)
+    const existingPayment = await Payment.findOne({ 
+      paypalOrderId: orderId,
+      status: 'completed'
+    });
+
+    if (existingPayment) {
+      console.log(`Payment already processed for PayPal order: ${orderId}`);
+      return;
+    }
+
     // Update payment record
-    await Payment.findOneAndUpdate(
+    const payment = await Payment.findOneAndUpdate(
       { paypalOrderId: orderId },
       {
         status: 'completed',
         paymentDate: new Date(),
-      }
-    );
+      },
+      { new: true }
+    ).populate('user').populate('booking');
 
-    console.log(`PayPal payment completed for order: ${orderId}`);
+    if (payment && payment.booking) {
+      // Update booking
+      const booking = await Booking.findByIdAndUpdate(
+        payment.booking._id,
+        {
+          paymentStatus: 'paid',
+          status: 'confirmed',
+        },
+        { new: true }
+      ).populate('tour');
+
+      // Send confirmation emails
+      if (booking && payment.user && booking.tour) {
+        try {
+          await sendPaymentReceipt(payment, payment.user, booking, booking.tour);
+          await sendBookingConfirmation(booking, payment.user, booking.tour);
+        } catch (emailError) {
+          console.error('Failed to send confirmation emails:', emailError);
+          // Don't fail webhook processing if emails fail
+        }
+      }
+    }
+
+    console.log(`PayPal payment verified and completed for order: ${orderId}`);
   } catch (error) {
     console.error('Error handling PayPal capture completed:', error);
+    throw error; // Re-throw to mark webhook as failed
   }
 };
 

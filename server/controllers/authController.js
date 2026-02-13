@@ -8,6 +8,7 @@ const {
   clearTokenCookies,
 } = require('../utils/jwt');
 const { sendPasswordResetEmail } = require('../utils/email');
+const { sendWelcomeEmail, sendSecurityNotification } = require('../utils/emailService');
 
 /**
  * @desc    Register new user
@@ -27,13 +28,30 @@ const register = async (req, res) => {
       });
     }
 
-    // Create user
+    // Create user with email verification required
+    // Note: Email verification is enforced via middleware on protected routes
     const user = await User.create({
       name,
       email,
       password,
       role: role || 'user', // Default to 'user' role
+      isEmailVerified: false, // Require email verification
     });
+
+    // Generate email verification token
+    const verificationToken = user.createEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Create verification URL
+    const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:5000'}/verify-email.html?token=${verificationToken}`;
+
+    // Send welcome email with verification link
+    try {
+      await sendWelcomeEmail(user, verificationUrl);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't fail registration if email fails
+    }
 
     // Generate tokens
     const accessToken = generateAccessToken(user._id);
@@ -41,14 +59,14 @@ const register = async (req, res) => {
 
     // Save refresh token to user
     user.refreshTokens.push({ token: refreshToken });
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     // Set cookies
     setTokenCookies(res, accessToken, refreshToken);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'User registered successfully. Please check your email to verify your account.',
       data: {
         user,
         accessToken,
@@ -478,6 +496,15 @@ const resetPassword = async (req, res) => {
     
     await user.save();
 
+    // Send security notification
+    try {
+      await sendSecurityNotification(user, 'password-changed', {
+        timestamp: new Date(),
+      });
+    } catch (emailError) {
+      console.error('Failed to send security notification:', emailError);
+    }
+
     res.status(200).json({
       success: true,
       message: 'Password reset successful. Please log in with your new password.',
@@ -487,6 +514,112 @@ const resetPassword = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Password reset failed',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Verify email address
+ * @route   GET /api/auth/verify-email/:token
+ * @access  Public
+ */
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Hash token to compare with stored hashed token
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Find user with valid token that hasn't expired
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired email verification token',
+      });
+    }
+
+    // Verify email
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully! You can now use all features.',
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    console.error('Verify email error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Email verification failed',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Resend email verification
+ * @route   POST /api/auth/resend-verification
+ * @access  Private
+ */
+const resendVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified',
+      });
+    }
+
+    // Generate new verification token
+    const verificationToken = user.createEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Create verification URL
+    const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:5000'}/verify-email.html?token=${verificationToken}`;
+
+    // Send verification email
+    try {
+      await sendWelcomeEmail(user, verificationUrl);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email. Please try again later.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification email sent successfully. Please check your inbox.',
+    });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to resend verification email',
       error: error.message,
     });
   }
@@ -503,4 +636,6 @@ module.exports = {
   googleCallback,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendVerification,
 };

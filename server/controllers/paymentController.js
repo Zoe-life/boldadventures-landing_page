@@ -2,6 +2,7 @@ const { stripe, stripeConfig, paypalConfig } = require('../config/payment');
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
 const { convertCurrency } = require('../utils/currencyConverter');
+const { sendPaymentReceipt } = require('../utils/emailService');
 
 /**
  * @desc    Create Stripe checkout session for booking payment
@@ -103,26 +104,76 @@ const verifyStripePayment = async (req, res) => {
   try {
     const { sessionId, bookingId } = req.body;
 
-    // Retrieve session from Stripe
+    // Check if payment already verified (prevent double-processing)
+    const existingPayment = await Payment.findOne({ 
+      stripeSessionId: sessionId,
+      status: 'completed'
+    });
+
+    if (existingPayment) {
+      return res.status(200).json({
+        success: true,
+        message: 'Payment already verified',
+        data: { payment: existingPayment },
+      });
+    }
+
+    // Retrieve session from Stripe to verify
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status === 'paid') {
+      // Verify booking belongs to user
+      const booking = await Booking.findById(bookingId).populate('user');
+      
+      if (!booking) {
+        return res.status(404).json({
+          success: false,
+          message: 'Booking not found',
+        });
+      }
+
+      if (booking.user._id.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to verify this payment',
+        });
+      }
+
       // Update payment record
       const payment = await Payment.findOneAndUpdate(
-        { stripeSessionId: sessionId },
+        { stripeSessionId: sessionId, status: { $ne: 'completed' } },
         {
           status: 'completed',
           paymentDate: new Date(),
           stripePaymentIntentId: session.payment_intent,
         },
         { new: true }
-      );
+      ).populate('user').populate('booking');
+
+      if (!payment) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment record not found or already completed',
+        });
+      }
 
       // Update booking
-      await Booking.findByIdAndUpdate(bookingId, {
+      const updatedBooking = await Booking.findByIdAndUpdate(bookingId, {
         paymentStatus: 'paid',
         status: 'confirmed',
-      });
+      }, { new: true }).populate('tour');
+
+      // Send payment receipt email
+      if (payment && updatedBooking && payment.user && updatedBooking.tour) {
+        try {
+          await sendPaymentReceipt(payment, payment.user, updatedBooking, updatedBooking.tour);
+        } catch (emailError) {
+          console.error('Failed to send payment receipt email:', emailError);
+          // Don't fail the payment verification if email fails
+        }
+      }
+
+      console.log(`Payment verified for booking ${bookingId} by user ${req.user._id}`);
 
       res.status(200).json({
         success: true,
@@ -251,6 +302,38 @@ const capturePayPalPayment = async (req, res) => {
   try {
     const { orderId, bookingId } = req.body;
 
+    // Check if payment already captured (prevent double-processing)
+    const existingPayment = await Payment.findOne({ 
+      booking: bookingId,
+      paymentMethod: 'paypal',
+      status: 'completed'
+    });
+
+    if (existingPayment) {
+      return res.status(200).json({
+        success: true,
+        message: 'Payment already captured',
+        data: { payment: existingPayment },
+      });
+    }
+
+    // Verify booking belongs to user
+    const booking = await Booking.findById(bookingId).populate('user');
+    
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found',
+      });
+    }
+
+    if (booking.user._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to capture this payment',
+      });
+    }
+
     // Update payment record
     const payment = await Payment.findOneAndUpdate(
       { booking: bookingId, paymentMethod: 'paypal', status: 'pending' },
@@ -260,20 +343,32 @@ const capturePayPalPayment = async (req, res) => {
         paypalOrderId: orderId,
       },
       { new: true }
-    );
+    ).populate('user').populate('booking');
 
     if (!payment) {
       return res.status(404).json({
         success: false,
-        message: 'Payment record not found',
+        message: 'Payment record not found or already completed',
       });
     }
 
     // Update booking
-    await Booking.findByIdAndUpdate(bookingId, {
+    const updatedBooking = await Booking.findByIdAndUpdate(bookingId, {
       paymentStatus: 'paid',
       status: 'confirmed',
-    });
+    }, { new: true }).populate('tour');
+
+    // Send payment receipt email
+    if (payment && updatedBooking && payment.user && updatedBooking.tour) {
+      try {
+        await sendPaymentReceipt(payment, payment.user, updatedBooking, updatedBooking.tour);
+      } catch (emailError) {
+        console.error('Failed to send payment receipt email:', emailError);
+        // Don't fail the payment capture if email fails
+      }
+    }
+
+    console.log(`PayPal payment captured for booking ${bookingId} by user ${req.user._id}`);
 
     res.status(200).json({
       success: true,
