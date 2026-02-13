@@ -284,16 +284,20 @@ const getGuideAnalytics = async (req, res) => {
     let startDate;
     switch (period) {
       case '7days':
-        startDate = new Date(now.setDate(now.getDate() - 7));
+        startDate = new Date(now.getTime());
+        startDate.setDate(startDate.getDate() - 7);
         break;
       case '30days':
-        startDate = new Date(now.setDate(now.getDate() - 30));
+        startDate = new Date(now.getTime());
+        startDate.setDate(startDate.getDate() - 30);
         break;
       case '90days':
-        startDate = new Date(now.setDate(now.getDate() - 90));
+        startDate = new Date(now.getTime());
+        startDate.setDate(startDate.getDate() - 90);
         break;
       default:
-        startDate = new Date(now.setDate(now.getDate() - 30));
+        startDate = new Date(now.getTime());
+        startDate.setDate(startDate.getDate() - 30);
     }
 
     // Get bookings trend for guide's tours

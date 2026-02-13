@@ -18,7 +18,7 @@ const createAuditLog = async (user, action, resource, resourceId = null, details
     }
 
     if (req) {
-      logData.ipAddress = req.ip || req.connection.remoteAddress;
+      logData.ipAddress = req.ip || req.socket?.remoteAddress;
       logData.userAgent = req.get('user-agent');
     }
 

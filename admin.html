@@ -937,7 +937,6 @@
           if (data.logs && data.logs.length > 0) {
             auditLogsTableBody.innerHTML = data.logs.map(log => {
               const timestamp = new Date(log.createdAt).toLocaleString();
-              const detailsJson = JSON.stringify(log.details || {});
               return `
                 <tr>
                   <td>${timestamp}</td>
@@ -945,10 +944,13 @@
                   <td>${log.action}</td>
                   <td>${log.resource}</td>
                   <td><span class="badge badge-${log.status.toLowerCase()}">${log.status}</span></td>
-                  <td><button class="action-btn btn-view" onclick='alert("Details: ${detailsJson.replace(/'/g, "\\'").replace(/"/g, '\\"')}")'><i class="fas fa-info-circle"></i></button></td>
+                  <td><button class="action-btn btn-view" onclick="showAuditLogDetails('${log._id}')"><i class="fas fa-info-circle"></i></button></td>
                 </tr>
               `;
             }).join('');
+            
+            // Store logs for details view
+            window.auditLogsData = data.logs;
           } else {
             auditLogsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No audit logs found</td></tr>';
           }
@@ -956,6 +958,22 @@
           console.error('Error loading audit logs:', error);
           auditLogsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading audit logs</td></tr>';
         }
+      }
+
+      function showAuditLogDetails(logId) {
+        if (!window.auditLogsData) {
+          alert('Audit log data not available');
+          return;
+        }
+        
+        const log = window.auditLogsData.find(l => l._id === logId);
+        if (!log) {
+          alert('Audit log not found');
+          return;
+        }
+        
+        const details = JSON.stringify(log.details || {}, null, 2);
+        alert('Audit Log Details:\n\n' + details);
       }
     </script>
   </body>
