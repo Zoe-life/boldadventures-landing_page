@@ -36,6 +36,49 @@ scrollLinks.forEach(link => {
   });
 });
 
+// ********** Tour Booking Functionality ************
+// Add event listeners to all booking buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const bookingButtons = document.querySelectorAll('.book-tour-btn');
+  
+  bookingButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Check if user is logged in
+      if (!isLoggedIn()) {
+        // Redirect to login page
+        alert('Please sign in or sign up to book a tour.');
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Get tour information from the card
+      const tourCard = e.target.closest('.tour-card');
+      const tourId = tourCard.getAttribute('data-tour-id');
+      const tourTitle = tourCard.querySelector('h4').textContent;
+      
+      // Show booking modal or prompt
+      const numberOfPeople = prompt(`How many people are booking for "${tourTitle}"?`, '1');
+      
+      if (numberOfPeople && parseInt(numberOfPeople) > 0) {
+        // For now, use a default start date (can be improved with a date picker)
+        const today = new Date();
+        const startDate = new Date(today.setMonth(today.getMonth() + 1)).toISOString();
+        
+        // Create booking
+        createBooking(tourId, startDate, parseInt(numberOfPeople))
+          .then(booking => {
+            alert(`✓ Booking successful! Your booking reference is ${booking._id.substring(0, 8).toUpperCase()}`);
+          })
+          .catch(error => {
+            alert(`✗ Booking failed: ${error.message}`);
+          });
+      }
+    });
+  });
+});
+
 // ********** Newsletter form integration ************
 // This will be enabled when backend is running
 // Uncomment the code below to enable newsletter subscription

@@ -280,6 +280,67 @@ async function subscribeNewsletter(email) {
 }
 
 // ==========================================
+// Booking API Functions
+// ==========================================
+
+/**
+ * Create a new booking
+ */
+async function createBooking(tourId, startDate, numberOfPeople, notes = '') {
+  try {
+    const data = await apiRequest('/bookings', {
+      method: 'POST',
+      body: JSON.stringify({ tourId, startDate, numberOfPeople, notes }),
+    });
+    return data.data.booking;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get user's bookings
+ */
+async function getMyBookings(filters = {}) {
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/bookings/my-bookings${queryParams ? `?${queryParams}` : ''}`;
+  
+  try {
+    const data = await apiRequest(endpoint);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get single booking by ID
+ */
+async function getBooking(id) {
+  try {
+    const data = await apiRequest(`/bookings/${id}`);
+    return data.data.booking;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Cancel booking
+ */
+async function cancelBooking(id, reason = '') {
+  try {
+    const data = await apiRequest(`/bookings/${id}/cancel`, {
+      method: 'PUT',
+      body: JSON.stringify({ reason }),
+    });
+    return data.data.booking;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// ==========================================
 // UI Update Examples
 // ==========================================
 
@@ -387,6 +448,10 @@ if (typeof module !== 'undefined' && module.exports) {
     getFeaturedTours,
     getTour,
     subscribeNewsletter,
+    createBooking,
+    getMyBookings,
+    getBooking,
+    cancelBooking,
     isLoggedIn,
   };
 }
