@@ -62,9 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const numberOfPeople = prompt(`How many people are booking for "${tourTitle}"?`, '1');
       
       if (numberOfPeople && parseInt(numberOfPeople) > 0) {
-        // For now, use a default start date (can be improved with a date picker)
+        // Calculate start date (1 month from now without mutating the date object)
         const today = new Date();
-        const startDate = new Date(today.setMonth(today.getMonth() + 1)).toISOString();
+        const startDate = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate()).toISOString();
         
         // Create booking
         createBooking(tourId, startDate, parseInt(numberOfPeople))

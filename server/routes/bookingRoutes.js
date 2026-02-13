@@ -21,6 +21,9 @@ const bookingValidation = [
     .withMessage('Number of people must be at least 1'),
 ];
 
+// Admin routes (must be before protect middleware)
+router.get('/all', protect, restrictTo('admin'), getAllBookings);
+
 // Protected routes (require authentication)
 router.use(protect);
 
@@ -29,8 +32,5 @@ router.post('/', bookingValidation, validate, createBooking);
 router.get('/my-bookings', getMyBookings);
 router.get('/:id', getBooking);
 router.put('/:id/cancel', cancelBooking);
-
-// Admin routes
-router.get('/', restrictTo('admin'), getAllBookings);
 
 module.exports = router;
