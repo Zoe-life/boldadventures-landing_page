@@ -1,4 +1,4 @@
-## Project: Bold Adventures Landing Page
+## Project: Bold Adventures
 
 This repository contains the **production-ready full-stack source code** for Bold Adventures, a comprehensive web platform designed to connect outdoor enthusiasts with guided biking and hiking adventures. The application includes a complete booking system, payment processing, and enterprise-grade security features.
 
