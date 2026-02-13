@@ -1,4 +1,15 @@
-require('dotenv').config();
+// Load secrets from Doppler or fallback to dotenv
+const { loadSecrets } = require('./server/config/doppler');
+
+// Load secrets before initializing other modules
+(async () => {
+  await loadSecrets();
+  
+  // Start the application after secrets are loaded
+  startServer();
+})();
+
+function startServer() {
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -198,3 +209,5 @@ process.on('unhandledRejection', (err) => {
 });
 
 module.exports = app;
+}
+// End of startServer function

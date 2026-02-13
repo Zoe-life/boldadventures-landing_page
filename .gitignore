@@ -20,5 +20,8 @@ build/
 # Environment variables
 .env
 
+# Doppler CLI
+.doppler.yaml
+
 # Test coverage
 coverage/

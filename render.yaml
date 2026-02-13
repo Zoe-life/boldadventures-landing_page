@@ -6,6 +6,14 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
+      # Option 1: Use Doppler for secrets management (Recommended)
+      # Add only DOPPLER_TOKEN to Render environment variables
+      # All other secrets will be fetched from Doppler automatically
+      # - key: DOPPLER_TOKEN
+      #   sync: false
+      
+      # Option 2: Traditional environment variables (fallback)
+      # Uncomment and configure these if not using Doppler
       - key: NODE_ENV
         value: production
       - key: PORT

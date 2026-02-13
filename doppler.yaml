@@ -1,0 +1,17 @@
+# Doppler Configuration File
+# This file helps configure Doppler for the Bold Adventures project
+# Learn more: https://docs.doppler.com/docs/enclave-project-setup
+
+setup:
+  project: boldadventures
+  config: dev
+
+# Environments mapping
+# You can define different configs for different environments
+environments:
+  development:
+    config: dev
+  staging:
+    config: stg
+  production:
+    config: prd
