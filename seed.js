@@ -142,7 +142,7 @@ const seedData = async () => {
     
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding data:', error);
+    console.error(' Error seeding data:', error);
     process.exit(1);
   }
 };
