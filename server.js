@@ -14,6 +14,7 @@ const { errorHandler, notFound } = require('./server/middleware/errorHandler');
 const authRoutes = require('./server/routes/authRoutes');
 const tourRoutes = require('./server/routes/tourRoutes');
 const newsletterRoutes = require('./server/routes/newsletterRoutes');
+const bookingRoutes = require('./server/routes/bookingRoutes');
 
 // Initialize express
 const app = express();
@@ -70,6 +71,7 @@ app.use(express.static(path.join(__dirname, '/')));
 app.use('/api/auth', authRoutes);
 app.use('/api/tours', tourRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
