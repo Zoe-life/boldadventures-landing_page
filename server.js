@@ -91,6 +91,8 @@ app.use('/api/', limiter);
 app.use('/api/', createSpeedLimiter());
 
 // Cookie parser (before webhooks as webhooks may need to be excluded)
+// Note: CSRF protection is selectively applied to state-changing routes
+// GET requests and public endpoints intentionally don't require CSRF tokens
 app.use(cookieParser());
 
 // Webhook routes (MUST be before body parser to get raw body for signature verification)
@@ -108,9 +110,6 @@ app.use(sanitizeData());
 
 // Prevent HTTP Parameter Pollution
 app.use(preventParameterPollution());
-
-// Cookie parser - moved earlier before webhook routes
-// app.use(cookieParser()); - Already added before webhooks
 
 // Initialize Passport
 app.use(passport.initialize());

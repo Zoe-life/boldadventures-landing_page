@@ -12,7 +12,7 @@ const {
   doubleCsrfProtection, // The middleware to validate the token
 } = doubleCsrf({
   getSecret: () => CSRF_SECRET,
-  cookieName: '__Host-psifi.x-csrf-token', // Prefix for enhanced security
+  cookieName: '__Host-boldadventures.x-csrf-token', // Application-specific prefix
   cookieOptions: {
     sameSite: 'strict',
     path: '/',
