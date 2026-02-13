@@ -50,6 +50,10 @@ const io = new Server(server, {
     origin: process.env.CLIENT_URL || 'http://localhost:5000',
     credentials: true,
   },
+  // Explicitly restrict transports to prevent WebRTC and network device discovery prompts
+  transports: ['websocket', 'polling'],
+  // Disable WebRTC transport to prevent browser permission requests
+  allowEIO3: false,
 });
 
 // Initialize socket for notifications
