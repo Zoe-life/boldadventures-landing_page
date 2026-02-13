@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guide Dashboard - BoldAdventures</title>
+    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="./fontawesome-free-5.12.1-web/css/all.min.css" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <style>
+      .guide-container {
+        min-height: 100vh;
+        background: var(--clr-grey-10);
+        padding: 2rem 0;
+      }
+
+      .guide-header {
+        background: linear-gradient(135deg, var(--clr-primary-5), var(--clr-primary-7));
+        color: var(--clr-white);
+        padding: 1.5rem 0;
+        margin-bottom: 2rem;
+        box-shadow: var(--dark-shadow);
+      }
+
+      .guide-header-content {
+        max-width: 1170px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .guide-header h1 {
+        margin: 0;
+        color: var(--clr-white);
+        font-size: 1.75rem;
+      }
+
+      .guide-nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .guide-nav a {
+        color: var(--clr-white);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        transition: var(--transition);
+      }
+
+      .guide-nav a:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .guide-content {
+        max-width: 1170px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      .guide-welcome {
+        background: linear-gradient(135deg, var(--clr-primary-9), var(--clr-white));
+        padding: 2rem;
+        border-radius: var(--radius);
+        margin-bottom: 2rem;
+        box-shadow: var(--light-shadow);
+      }
+
+      .guide-welcome h2 {
+        margin: 0 0 0.5rem 0;
+        color: var(--clr-primary-1);
+      }
+
+      .guide-welcome p {
+        margin: 0;
+        color: var(--clr-grey-5);
+      }
+
+      .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-box {
+        background: var(--clr-white);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--light-shadow);
+        text-align: center;
+        border-left: 4px solid var(--clr-primary-5);
+      }
+
+      .stat-box .icon {
+        font-size: 2rem;
+        color: var(--clr-primary-5);
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-box h3 {
+        margin: 0;
+        font-size: 2rem;
+        color: var(--clr-grey-1);
+      }
+
+      .stat-box p {
+        margin: 0.5rem 0 0 0;
+        color: var(--clr-grey-5);
+        font-size: 0.875rem;
+      }
+
+      .guide-card {
+        background: var(--clr-white);
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--light-shadow);
+        margin-bottom: 2rem;
+      }
+
+      .guide-card h2 {
+        margin-top: 0;
+        color: var(--clr-primary-5);
+        border-bottom: 2px solid var(--clr-grey-9);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .tours-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .tour-item {
+        border: 1px solid var(--clr-grey-9);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: var(--transition);
+      }
+
+      .tour-item:hover {
+        box-shadow: var(--dark-shadow);
+        transform: translateY(-3px);
+      }
+
+      .tour-item-img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+      }
+
+      .tour-item-content {
+        padding: 1rem;
+      }
+
+      .tour-item-content h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--clr-grey-1);
+      }
+
+      .tour-item-content p {
+        margin: 0 0 0.75rem 0;
+        color: var(--clr-grey-5);
+        font-size: 0.875rem;
+      }
+
+      .tour-item-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow-x: auto;
+        display: block;
+      }
+
+      .data-table thead {
+        background: var(--clr-grey-10);
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--clr-grey-9);
+      }
+
+      .data-table th {
+        font-weight: 700;
+        color: var(--clr-grey-1);
+      }
+
+      .data-table tr:hover {
+        background: var(--clr-grey-10);
+      }
+
+      .action-btn {
+        padding: 0.35rem 0.75rem;
+        margin: 0 0.25rem;
+        border: none;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.8rem;
+      }
+
+      .btn-edit {
+        background: var(--clr-primary-5);
+        color: var(--clr-white);
+      }
+
+      .btn-edit:hover {
+        background: var(--clr-primary-3);
+      }
+
+      .btn-view {
+        background: var(--clr-grey-5);
+        color: var(--clr-white);
+      }
+
+      .btn-view:hover {
+        background: var(--clr-grey-3);
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .badge-pending {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .badge-confirmed {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .badge-completed {
+        background: var(--clr-primary-10);
+        color: var(--clr-primary-5);
+      }
+
+      .badge-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      /* Responsive */
+      @media screen and (max-width: 768px) {
+        .guide-header-content {
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .guide-nav {
+          flex-direction: column;
+          gap: 0.5rem;
+          width: 100%;
+        }
+
+        .guide-nav a {
+          width: 100%;
+          text-align: center;
+        }
+
+        .guide-content {
+          padding: 0 1rem;
+        }
+
+        .quick-stats {
+          grid-template-columns: 1fr;
+        }
+
+        .tours-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .data-table {
+          font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+          padding: 0.5rem;
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        .guide-header h1 {
+          font-size: 1.5rem;
+        }
+
+        .guide-welcome {
+          padding: 1.5rem;
+        }
+
+        .data-table {
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="guide-container">
+      <!-- Guide Header -->
+      <header class="guide-header">
+        <div class="guide-header-content">
+          <h1><i class="fas fa-hiking"></i> Guide Dashboard</h1>
+          <nav class="guide-nav">
+            <a href="index.html"><i class="fas fa-home"></i> Home</a>
+            <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </nav>
+        </div>
+      </header>
+
+      <!-- Guide Content -->
+      <div class="guide-content">
+        <!-- Welcome Section -->
+        <div class="guide-welcome">
+          <h2>Welcome back, <span id="guide-name">Guide</span>! 👋</h2>
+          <p>Manage your tours and track your bookings from this dashboard.</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+          <div class="stat-box">
+            <div class="icon">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h3 id="my-tours-count">0</h3>
+            <p>My Tours</p>
+          </div>
+          <div class="stat-box">
+            <div class="icon">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3 id="upcoming-bookings-count">0</h3>
+            <p>Upcoming Bookings</p>
+          </div>
+          <div class="stat-box">
+            <div class="icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3 id="total-participants">0</h3>
+            <p>Total Participants</p>
+          </div>
+        </div>
+
+        <!-- My Tours Section -->
+        <div class="guide-card">
+          <h2><i class="fas fa-map-marked-alt"></i> My Tours</h2>
+          <button class="btn" style="margin-bottom: 1.5rem;" onclick="alert('Create tour functionality coming soon')">
+            <i class="fas fa-plus"></i> Create New Tour
+          </button>
+          <div class="tours-grid" id="tours-grid">
+            <!-- Tours will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Bookings Section -->
+        <div class="guide-card">
+          <h2><i class="fas fa-calendar-check"></i> Tour Bookings</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tour</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Participants</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookings-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem;">
+                  Loading bookings...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/api.js"></script>
+    <script>
+      // Check if user is guide
+      document.addEventListener('DOMContentLoaded', async () => {
+        // Check authentication
+        if (!isLoggedIn()) {
+          alert('Please login to access the guide dashboard');
+          window.location.href = '/login.html';
+          return;
+        }
+
+        try {
+          const user = await getCurrentUser();
+          if (user.role !== 'guide' && user.role !== 'admin') {
+            alert('Access denied. Guide privileges required.');
+            window.location.href = '/index.html';
+            return;
+          }
+
+          // Update guide name
+          document.getElementById('guide-name').textContent = user.name;
+
+          // Load dashboard data
+          loadGuideDashboard();
+        } catch (error) {
+          alert('Error loading user data. Please login again.');
+          window.location.href = '/login.html';
+        }
+
+        // Logout
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+          e.preventDefault();
+          await logout();
+          window.location.href = '/index.html';
+        });
+      });
+
+      // Load guide dashboard data
+      function loadGuideDashboard() {
+        // Mock data - Replace with actual API calls
+        document.getElementById('my-tours-count').textContent = '8';
+        document.getElementById('upcoming-bookings-count').textContent = '15';
+        document.getElementById('total-participants').textContent = '42';
+
+        loadMyTours();
+        loadMyBookings();
+      }
+
+      function loadMyTours() {
+        const toursGrid = document.getElementById('tours-grid');
+        const mockTours = [
+          {
+            id: 1,
+            title: 'Tibet Adventure',
+            location: 'China',
+            duration: '6 days',
+            price: 'Ksh.340,000',
+            image: './images/tour-1.jpeg',
+            bookings: 5
+          },
+          {
+            id: 2,
+            title: 'Best of Java',
+            location: 'Indonesia',
+            duration: '11 days',
+            price: 'Ksh.200,000',
+            image: './images/tour-2.jpeg',
+            bookings: 8
+          },
+          {
+            id: 3,
+            title: 'Explore Hong Kong',
+            location: 'Hong Kong',
+            duration: '8 days',
+            price: 'Ksh.300,000',
+            image: './images/tour-3.jpeg',
+            bookings: 3
+          },
+        ];
+
+        toursGrid.innerHTML = mockTours.map(tour => `
+          <div class="tour-item">
+            <img src="${tour.image}" alt="${tour.title}" class="tour-item-img" />
+            <div class="tour-item-content">
+              <h4>${tour.title}</h4>
+              <p><i class="fas fa-map-marker-alt"></i> ${tour.location}</p>
+              <p><i class="fas fa-clock"></i> ${tour.duration} | <strong>${tour.price}</strong></p>
+              <p><i class="fas fa-users"></i> ${tour.bookings} active bookings</p>
+              <div class="tour-item-actions">
+                <button class="action-btn btn-edit" onclick="alert('Edit tour functionality coming soon')">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="action-btn btn-view" onclick="alert('View details coming soon')">
+                  <i class="fas fa-eye"></i> View
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function loadMyBookings() {
+        const bookingsTableBody = document.getElementById('bookings-table-body');
+        const mockBookings = [
+          {
+            tour: 'Tibet Adventure',
+            customer: 'John Doe',
+            date: '2024-03-15',
+            participants: 2,
+            status: 'confirmed'
+          },
+          {
+            tour: 'Best of Java',
+            customer: 'Jane Smith',
+            date: '2024-04-20',
+            participants: 4,
+            status: 'pending'
+          },
+          {
+            tour: 'Explore Hong Kong',
+            customer: 'Bob Johnson',
+            date: '2024-05-10',
+            participants: 1,
+            status: 'confirmed'
+          },
+          {
+            tour: 'Tibet Adventure',
+            customer: 'Alice Brown',
+            date: '2024-02-01',
+            participants: 3,
+            status: 'completed'
+          },
+        ];
+
+        bookingsTableBody.innerHTML = mockBookings.map(booking => `
+          <tr>
+            <td>${booking.tour}</td>
+            <td>${booking.customer}</td>
+            <td>${booking.date}</td>
+            <td>${booking.participants}</td>
+            <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
+            <td>
+              <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
+                <i class="fas fa-eye"></i> View
+              </button>
+              <button class="action-btn btn-edit" onclick="alert('Update status coming soon')">
+                <i class="fas fa-edit"></i> Update
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    </script>
+  </body>
+</html>
