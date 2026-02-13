@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification - BoldAdventures</title>
+    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="./fontawesome-free-5.12.1-web/css/all.min.css" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <style>
+      .verify-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--clr-grey-10);
+        padding: 2rem;
+      }
+
+      .verify-card {
+        background: var(--clr-white);
+        padding: 3rem;
+        border-radius: var(--radius);
+        box-shadow: var(--dark-shadow);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .verify-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .verify-icon.loading {
+        color: var(--clr-primary-5);
+        animation: spin 1s linear infinite;
+      }
+
+      .verify-icon.success {
+        color: #4caf50;
+      }
+
+      .verify-icon.error {
+        color: #f44336;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .verify-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--clr-grey-1);
+      }
+
+      .verify-message {
+        font-size: 1.125rem;
+        color: var(--clr-grey-5);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+
+      .verify-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        border-radius: var(--radius);
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: var(--clr-primary-5);
+        color: var(--clr-white);
+      }
+
+      .btn-primary:hover {
+        background: var(--clr-primary-7);
+      }
+
+      .btn-secondary {
+        background: var(--clr-grey-9);
+        color: var(--clr-grey-5);
+      }
+
+      .btn-secondary:hover {
+        background: var(--clr-grey-8);
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="verify-container">
+      <div class="verify-card">
+        <!-- Loading State -->
+        <div id="loading-state">
+          <div class="verify-icon loading">
+            <i class="fas fa-circle-notch"></i>
+          </div>
+          <h1 class="verify-title">Verifying Your Email</h1>
+          <p class="verify-message">
+            Please wait while we verify your email address...
+          </p>
+        </div>
+
+        <!-- Success State -->
+        <div id="success-state" class="hidden">
+          <div class="verify-icon success">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h1 class="verify-title">Email Verified!</h1>
+          <p class="verify-message">
+            Your email has been successfully verified. You can now access all features of BoldAdventures.
+          </p>
+          <div class="verify-actions">
+            <a href="/index.html" class="btn btn-primary">
+              <i class="fas fa-home"></i> Go to Home
+            </a>
+            <a href="/index.html#tours" class="btn btn-secondary">
+              <i class="fas fa-binoculars"></i> Explore Tours
+            </a>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="hidden">
+          <div class="verify-icon error">
+            <i class="fas fa-times-circle"></i>
+          </div>
+          <h1 class="verify-title">Verification Failed</h1>
+          <p class="verify-message" id="error-message">
+            The verification link is invalid or has expired. Please request a new verification email.
+          </p>
+          <div class="verify-actions">
+            <button id="resend-btn" class="btn btn-primary">
+              <i class="fas fa-envelope"></i> Resend Verification Email
+            </button>
+            <a href="/login.html" class="btn btn-secondary">
+              <i class="fas fa-sign-in-alt"></i> Back to Login
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Get token from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+
+      const loadingState = document.getElementById('loading-state');
+      const successState = document.getElementById('success-state');
+      const errorState = document.getElementById('error-state');
+      const errorMessage = document.getElementById('error-message');
+      const resendBtn = document.getElementById('resend-btn');
+
+      // Verify email
+      async function verifyEmail() {
+        if (!token) {
+          showError('No verification token provided.');
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/auth/verify-email/${token}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showSuccess();
+          } else {
+            showError(data.message || 'Email verification failed.');
+          }
+        } catch (error) {
+          console.error('Verification error:', error);
+          showError('An error occurred during verification. Please try again.');
+        }
+      }
+
+      function showSuccess() {
+        loadingState.classList.add('hidden');
+        errorState.classList.add('hidden');
+        successState.classList.remove('hidden');
+      }
+
+      function showError(message) {
+        loadingState.classList.add('hidden');
+        successState.classList.add('hidden');
+        errorMessage.textContent = message;
+        errorState.classList.remove('hidden');
+      }
+
+      // Resend verification email
+      resendBtn.addEventListener('click', async () => {
+        resendBtn.disabled = true;
+        resendBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending...';
+
+        try {
+          // Get CSRF token first
+          const csrfResponse = await fetch('/api/csrf-token');
+          const csrfData = await csrfResponse.json();
+
+          const response = await fetch('/api/auth/resend-verification', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfData.token,
+            },
+            credentials: 'include',
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            alert('Verification email sent! Please check your inbox.');
+            resendBtn.innerHTML = '<i class="fas fa-check"></i> Email Sent';
+          } else {
+            if (response.status === 401) {
+              alert('Please log in to resend verification email.');
+              window.location.href = '/login.html';
+            } else {
+              alert(data.message || 'Failed to resend email. Please try again.');
+              resendBtn.disabled = false;
+              resendBtn.innerHTML = '<i class="fas fa-envelope"></i> Resend Verification Email';
+            }
+          }
+        } catch (error) {
+          console.error('Resend error:', error);
+          alert('An error occurred. Please try again.');
+          resendBtn.disabled = false;
+          resendBtn.innerHTML = '<i class="fas fa-envelope"></i> Resend Verification Email';
+        }
+      });
+
+      // Start verification on page load
+      verifyEmail();
+    </script>
+  </body>
+</html>

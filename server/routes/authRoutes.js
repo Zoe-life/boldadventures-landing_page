@@ -12,6 +12,8 @@ const {
   googleCallback,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendVerification,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -68,6 +70,10 @@ router.put('/change-password', protect, csrfProtection, changePasswordValidation
 // Password reset routes
 router.post('/forgot-password', authRateLimiter, csrfProtection, forgotPasswordValidation, validate, forgotPassword);
 router.post('/reset-password/:token', authRateLimiter, csrfProtection, resetPasswordValidation, validate, resetPassword);
+
+// Email verification routes
+router.get('/verify-email/:token', verifyEmail);
+router.post('/resend-verification', protect, csrfProtection, resendVerification);
 
 // Google OAuth Routes
 router.get(

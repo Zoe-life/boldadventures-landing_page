@@ -65,6 +65,8 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
   },
   {
     timestamps: true,
@@ -128,6 +130,26 @@ userSchema.methods.createPasswordResetToken = function () {
   
   // Return plain token (this is what we send via email)
   return resetToken;
+};
+
+// Create email verification token
+userSchema.methods.createEmailVerificationToken = function () {
+  const crypto = require('crypto');
+  
+  // Generate random token
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  
+  // Hash token and set to emailVerificationToken field
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+  
+  // Set token expiry (24 hours)
+  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+  
+  // Return plain token (this is what we send via email)
+  return verificationToken;
 };
 
 // Remove password from output

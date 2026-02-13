@@ -23,6 +23,7 @@
   "homepage": "https://github.com/Zoe-life/boldadventures-landing_page#readme",
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.3",
+    "@sendgrid/mail": "^8.1.6",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
