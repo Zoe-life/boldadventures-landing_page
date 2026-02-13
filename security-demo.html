@@ -120,7 +120,7 @@
                     csrfToken = data.csrfToken;
                     resultDiv.className = 'result success';
                     resultDiv.innerHTML = `
- CSRF Token Retrieved Successfully!
+CSRF Token Retrieved Successfully!
 
 Token: <span class="token">${csrfToken}</span>
 
@@ -169,7 +169,7 @@ This token will be used in subsequent requests.
                     // 400 might be validation error (user exists, etc)
                     resultDiv.className = 'result success';
                     resultDiv.textContent = `
- Request was accepted by server!
+Request was accepted by server!
 
 Status: ${response.status}
 Message: ${data.message}
@@ -210,7 +210,7 @@ The CSRF protection allowed this request because it had a valid token.
                 if (response.status === 403) {
                     resultDiv.className = 'result success';
                     resultDiv.textContent = `
- CSRF Protection Working!
+CSRF Protection Working!
 
 Status: ${response.status}
 Message: ${data.message}
@@ -286,7 +286,7 @@ Expected 403 Forbidden for missing CSRF token.
                 
                 resultDiv.className = 'result success';
                 resultDiv.textContent = `
- NoSQL Injection Protection Working!
+NoSQL Injection Protection Working!
 
 Attempted injection: price[$gt]=0
 This MongoDB operator should be sanitized by express-mongo-sanitize.
@@ -312,7 +312,7 @@ Response Status: ${response.status}
                 if (response.ok) {
                     resultDiv.className = 'result success';
                     resultDiv.textContent = `
- Server is running!
+Server is running!
 
 ${JSON.stringify(data, null, 2)}
                     `;
