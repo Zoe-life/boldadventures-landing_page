@@ -13,7 +13,7 @@ const createStripeCheckoutSession = async (req, res) => {
     const { bookingId } = req.body;
 
     // Get booking details
-    const booking = await Booking.findById(bookingId).populate('user');
+    const booking = await Booking.findById(bookingId).populate('user').populate('tour');
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -155,7 +155,7 @@ const createPayPalOrder = async (req, res) => {
     const { bookingId } = req.body;
 
     // Get booking details
-    const booking = await Booking.findById(bookingId).populate('user');
+    const booking = await Booking.findById(bookingId).populate('user').populate('tour');
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -300,7 +300,7 @@ const submitBankTransfer = async (req, res) => {
     const { bookingId, bankTransferReference, bankTransferProof } = req.body;
 
     // Get booking details
-    const booking = await Booking.findById(bookingId).populate('user');
+    const booking = await Booking.findById(bookingId).populate('user').populate('tour');
     if (!booking) {
       return res.status(404).json({
         success: false,
