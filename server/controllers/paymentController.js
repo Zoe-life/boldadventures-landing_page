@@ -12,7 +12,7 @@ const createStripeCheckoutSession = async (req, res) => {
     const { bookingId } = req.body;
 
     // Get booking details
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId).populate('user');
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -154,7 +154,7 @@ const createPayPalOrder = async (req, res) => {
     const { bookingId } = req.body;
 
     // Get booking details
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId).populate('user');
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -178,8 +178,10 @@ const createPayPalOrder = async (req, res) => {
       });
     }
 
-    // Convert KES to USD for PayPal (approximate conversion)
-    const amountInUSD = (booking.totalPrice / 130).toFixed(2); // Approximate KES to USD
+    // Convert KES to USD for PayPal (using approximate conversion rate)
+    // Note: In production, use a currency conversion API for real-time rates
+    const KES_TO_USD_RATE = parseFloat(process.env.KES_TO_USD_RATE || '0.0077'); // ~130 KES = 1 USD
+    const amountInUSD = (booking.totalPrice * KES_TO_USD_RATE).toFixed(2);
 
     // PayPal order creation payload
     const orderData = {
@@ -298,7 +300,7 @@ const submitBankTransfer = async (req, res) => {
     const { bookingId, bankTransferReference, bankTransferProof } = req.body;
 
     // Get booking details
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId).populate('user');
     if (!booking) {
       return res.status(404).json({
         success: false,

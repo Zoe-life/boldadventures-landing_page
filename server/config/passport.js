@@ -55,8 +55,8 @@ module.exports = function(passport) {
             email: profile.emails[0].value,
             avatar: profile.photos[0]?.value,
             role: 'user',
-            // Password is not required for OAuth users
-            password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8),
+            // OAuth users don't need a password - set a secure random one for model validation
+            password: require('crypto').randomBytes(32).toString('hex'),
           });
 
           done(null, user);
