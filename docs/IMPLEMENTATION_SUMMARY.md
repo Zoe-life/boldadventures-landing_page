@@ -361,4 +361,4 @@ Your BoldAdventures backend is ready for production deployment with:
 
 ---
 
-*Built with  for BoldAdventures*
+*Built with care for BoldAdventures*

@@ -437,14 +437,6 @@ See [docs/ENV_SETUP.md](./docs/ENV_SETUP.md) for detailed instructions on obtain
 
 After running `npm run seed`, you can use these test accounts:
 
-- **Admin**: admin@boldadventures.com / Admin123!
-- **Guide**: guide@boldadventures.com / Guide123!
-- **User**: user@example.com / User123!
-
-## Test Accounts
-
-After running `npm run seed`, you can use these test accounts:
-
 - **Admin**: 
   - Email: `admin@boldadventures.com`
   - Password: `Admin123!`
