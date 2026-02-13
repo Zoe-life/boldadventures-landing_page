@@ -5,7 +5,10 @@ This repository contains the full-stack source code for Bold Adventures, a web p
 ## Technology Stack
 
 ### Frontend
-- HTML5, CSS3, Vanilla JavaScript
+- **React** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **SCSS** - Enhanced CSS with variables and nesting
+- **Vite** - Fast build tool and dev server
 - Responsive design
 - FontAwesome icons
 
@@ -48,29 +51,43 @@ cd boldadventures-landing_page
 npm install
 ```
 
-3. Set up environment variables:
+3. Build the frontend:
+```bash
+npm run build
+```
+
+4. Set up environment variables:
 ```bash
 cp .env.example .env
 ```
 
 Edit the `.env` file with your configuration (see `.env.example` for all options).
 
-4. Start MongoDB (if running locally):
+5. Start MongoDB (if running locally):
 ```bash
 mongod
 ```
 
-5. Seed the database with sample data (optional):
+6. Seed the database with sample data (optional):
 ```bash
 npm run seed
 ```
 
-6. Start the development server:
+7. Start the development server:
 ```bash
 npm run dev
 ```
 
 The application will be available at `http://localhost:5000`
+
+### Development Scripts
+
+- `npm run build` - Build the React frontend for production
+- `npm run dev` - Start the backend development server (with nodemon)
+- `npm run dev:vite` - Start the Vite development server for frontend-only development
+- `npm run preview` - Preview the production build locally
+- `npm start` - Start the production server
+- `npm run seed` - Seed the database with sample data
 
 ## API Documentation
 
@@ -85,6 +102,11 @@ See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for complete API reference in
 
 ```
 boldadventures-landing_page/
+├── src/                 # React frontend source
+│   ├── components/      # React components
+│   ├── styles/          # SCSS stylesheets
+│   ├── App.tsx          # Root component
+│   └── main.tsx         # Entry point
 ├── server/
 │   ├── config/          # Database configuration
 │   ├── controllers/     # Request handlers
@@ -92,12 +114,13 @@ boldadventures-landing_page/
 │   ├── models/          # Mongoose schemas
 │   ├── routes/          # API routes
 │   └── utils/           # Helper functions
-├── css/                 # Frontend stylesheets
-├── js/                  # Frontend JavaScript
+├── dist/                # Production build (generated)
 ├── images/              # Static assets
-├── index.html           # Landing page
+├── index.html           # HTML template for React
 ├── server.js            # Express app entry point
 ├── seed.js              # Database seeding script
+├── vite.config.ts       # Vite configuration
+├── tsconfig.json        # TypeScript configuration
 ├── render.yaml          # Render deployment config
 └── .env.example         # Environment variables template
 ```
