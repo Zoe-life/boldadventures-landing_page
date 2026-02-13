@@ -63,8 +63,11 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '/')));
+// Serve static files from the React build
+app.use(express.static(path.join(__dirname, 'dist')));
+// Serve other static assets (images, fonts, etc.)
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/fontawesome-free-5.12.1-web', express.static(path.join(__dirname, 'fontawesome-free-5.12.1-web')));
 
 // API routes
 app.use('/api/auth', authRoutes);
@@ -82,7 +85,7 @@ app.get('/api/health', (req, res) => {
 
 // Serve frontend for all other routes (SPA support)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Error handling
