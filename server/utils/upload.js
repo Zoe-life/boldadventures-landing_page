@@ -1,8 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const { cloudinary, isCloudinaryConfigured } = require('../config/cloudinary');
+const { isCloudinaryConfigured } = require('../config/cloudinary');
 
 // Create uploads directory if it doesn't exist (for local storage)
 const uploadDir = path.join(__dirname, '../../images/uploads');
@@ -10,8 +9,8 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Local storage configuration
-const localStorage = multer.diskStorage({
+// Storage configuration - always use local, will upload to Cloudinary in controller if configured
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
   },
@@ -22,34 +21,6 @@ const localStorage = multer.diskStorage({
     cb(null, file.fieldname + '-' + uniqueSuffix + ext);
   },
 });
-
-// Cloudinary storage configuration
-const cloudinaryStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req, file) => {
-    // Determine folder based on file field
-    let folder = 'boldadventures';
-    if (file.fieldname === 'coverImage') {
-      folder = 'boldadventures/tours/covers';
-    } else if (file.fieldname === 'images') {
-      folder = 'boldadventures/tours/gallery';
-    } else if (file.fieldname === 'image') {
-      folder = 'boldadventures/profiles';
-    }
-
-    return {
-      folder: folder,
-      allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-      transformation: [
-        { width: 1200, height: 800, crop: 'limit' },
-        { quality: 'auto' },
-      ],
-    };
-  },
-});
-
-// Choose storage based on Cloudinary configuration
-const storage = isCloudinaryConfigured() ? cloudinaryStorage : localStorage;
 
 // File filter for images only
 const fileFilter = (req, file, cb) => {

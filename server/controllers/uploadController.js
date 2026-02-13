@@ -2,18 +2,34 @@ const User = require('../models/User');
 const Tour = require('../models/Tour');
 const fs = require('fs');
 const path = require('path');
-const { isCloudinaryConfigured } = require('../config/cloudinary');
+const { isCloudinaryConfigured, uploadToCloudinary } = require('../config/cloudinary');
 
 /**
- * Helper function to get image URL based on storage type
+ * Helper function to upload file to Cloudinary and delete local file
  * @param {object} file - Multer file object
+ * @param {string} folder - Cloudinary folder path
  */
-const getImageUrl = (file) => {
-  if (isCloudinaryConfigured()) {
-    // Cloudinary URL is already in file.path
-    return file.path;
-  } else {
-    // Local file URL
+const uploadFileToCloudinary = async (file, folder) => {
+  if (!isCloudinaryConfigured()) {
+    // Return local URL if Cloudinary not configured
+    return `/images/uploads/${file.filename}`;
+  }
+
+  try {
+    // Upload to Cloudinary
+    const result = await uploadToCloudinary(file.path, { folder });
+    
+    // Delete local file after successful upload
+    try {
+      fs.unlinkSync(file.path);
+    } catch (err) {
+      console.error('Error deleting local file:', err);
+    }
+    
+    return result.url;
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    // If Cloudinary fails, fall back to local storage
     return `/images/uploads/${file.filename}`;
   }
 };
@@ -23,7 +39,7 @@ const getImageUrl = (file) => {
  * @param {object} file - Multer file object
  */
 const deleteLocalFile = (file) => {
-  if (!isCloudinaryConfigured() && file && file.path) {
+  if (file && file.path) {
     try {
       fs.unlinkSync(file.path);
     } catch (error) {
@@ -46,8 +62,8 @@ const uploadProfilePicture = async (req, res) => {
       });
     }
 
-    // Generate URL for the uploaded file
-    const imageUrl = getImageUrl(req.file);
+    // Upload to Cloudinary or use local URL
+    const imageUrl = await uploadFileToCloudinary(req.file, 'boldadventures/profiles');
 
     // Update user avatar
     const user = await User.findByIdAndUpdate(
@@ -67,7 +83,7 @@ const uploadProfilePicture = async (req, res) => {
     });
   } catch (error) {
     console.error('Upload profile picture error:', error);
-    // Delete uploaded file if database update fails (only for local storage)
+    // Delete uploaded file if database update fails
     deleteLocalFile(req.file);
     res.status(500).json({
       success: false,
@@ -122,12 +138,18 @@ const uploadTourImages = async (req, res) => {
 
     // Handle cover image
     if (req.files && req.files.coverImage && req.files.coverImage[0]) {
-      updateData.coverImage = getImageUrl(req.files.coverImage[0]);
+      updateData.coverImage = await uploadFileToCloudinary(
+        req.files.coverImage[0],
+        'boldadventures/tours/covers'
+      );
     }
 
     // Handle additional images
     if (req.files && req.files.images) {
-      const imageUrls = req.files.images.map(file => getImageUrl(file));
+      const uploadPromises = req.files.images.map(file =>
+        uploadFileToCloudinary(file, 'boldadventures/tours/gallery')
+      );
+      const imageUrls = await Promise.all(uploadPromises);
       updateData.images = [...(tour.images || []), ...imageUrls];
     }
 
@@ -148,7 +170,7 @@ const uploadTourImages = async (req, res) => {
     });
   } catch (error) {
     console.error('Upload tour images error:', error);
-    // Delete uploaded files on error (only for local storage)
+    // Delete uploaded files on error
     if (req.files) {
       Object.values(req.files).flat().forEach(file => {
         deleteLocalFile(file);
@@ -176,8 +198,8 @@ const uploadImage = async (req, res) => {
       });
     }
 
-    // Generate URL for the uploaded file
-    const imageUrl = getImageUrl(req.file);
+    // Upload to Cloudinary or use local URL
+    const imageUrl = await uploadFileToCloudinary(req.file, 'boldadventures');
 
     res.status(200).json({
       success: true,
@@ -192,7 +214,7 @@ const uploadImage = async (req, res) => {
     });
   } catch (error) {
     console.error('Upload image error:', error);
-    // Delete uploaded file on error (only for local storage)
+    // Delete uploaded file on error
     deleteLocalFile(req.file);
     res.status(500).json({
       success: false,
