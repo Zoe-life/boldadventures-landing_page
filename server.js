@@ -29,6 +29,8 @@ const paymentRoutes = require('./server/routes/paymentRoutes');
 const currencyRoutes = require('./server/routes/currencyRoutes');
 const csrfRoutes = require('./server/routes/csrfRoutes');
 const webhookRoutes = require('./server/routes/webhookRoutes');
+const adminRoutes = require('./server/routes/adminRoutes');
+const guideRoutes = require('./server/routes/guideRoutes');
 
 // Initialize express
 const app = express();
@@ -130,6 +132,8 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/currency', currencyRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/guide', guideRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
