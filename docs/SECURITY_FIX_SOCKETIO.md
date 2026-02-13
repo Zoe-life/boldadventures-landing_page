@@ -62,9 +62,9 @@ To further reduce the likelihood of browser permission prompts:
 ## Impact
 
 ### Positive
-- ✅ Eliminates browser permission prompts for network device access
+- ✅ May reduce browser permission prompts for network device access
 - ✅ Improves user experience during login/booking flow
-- ✅ Reduces security concerns
+- ✅ Reduces security concerns by being explicit about transports
 - ✅ Maintains full real-time notification functionality
 - ✅ WebSocket and polling are sufficient for all application needs
 
@@ -99,8 +99,8 @@ const socket = io('http://localhost:5000', {
 ## References
 
 - [Socket.IO Transport Documentation](https://socket.io/docs/v4/client-options/#transports)
-- [Chrome Local Network Access](https://developer.chrome.com/blog/private-network-access-update/)
-- [Browser Local Network Access Permissions](https://developer.mozilla.org/en-US/docs/Web/API/Local_Network_Access)
+- [Chrome Private Network Access](https://developer.chrome.com/blog/private-network-access-update/)
+- [Private Network Access Specification](https://wicg.github.io/private-network-access/)
 - [Engine.IO Protocol](https://socket.io/docs/v4/engine-io-protocol/)
 
 ## Related Files

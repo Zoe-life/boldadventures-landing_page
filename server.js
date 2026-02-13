@@ -50,8 +50,8 @@ const io = new Server(server, {
     origin: process.env.CLIENT_URL || 'http://localhost:5000',
     credentials: true,
   },
-  // Explicitly set allowed transports (websocket and polling are the defaults)
-  // This helps prevent unexpected behavior from future Socket.IO versions
+  // Explicitly set allowed transports to ensure predictable Socket.IO behavior
+  // This may help reduce browser Local Network Access permission prompts
   transports: ['websocket', 'polling'],
 });
 
