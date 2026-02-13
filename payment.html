@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - BoldAdventures</title>
+  <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./fontawesome-free-5.12.1-web/css/all.min.css" />
+  <link rel="stylesheet" href="./css/styles.css" />
+  <script src="https://js.stripe.com/v3/"></script>
+  <!-- Note: PayPal SDK should be loaded dynamically with client ID from backend -->
+  <!-- <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script> -->
+  <style>
+    .payment-container {
+      max-width: 800px;
+      margin: 5rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .payment-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .payment-header h2 {
+      color: #2caeba;
+      margin-bottom: 0.5rem;
+    }
+    .booking-summary {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .summary-item:last-child {
+      border-bottom: none;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #2caeba;
+    }
+    .payment-methods {
+      margin-top: 2rem;
+    }
+    .payment-method-btn {
+      width: 100%;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .payment-method-btn:hover {
+      border-color: #2caeba;
+      background: #f0f9fa;
+    }
+    .payment-method-btn.active {
+      border-color: #2caeba;
+      background: #e6f7f8;
+    }
+    .payment-method-btn i {
+      font-size: 1.5rem;
+    }
+    .payment-form {
+      display: none;
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .payment-form.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #333;
+      font-weight: 600;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    .btn-pay {
+      width: 100%;
+      padding: 1rem;
+      background: #2caeba;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn-pay:hover {
+      background: #1a8792;
+    }
+    #paypal-button-container {
+      margin-top: 1rem;
+    }
+    .bank-details {
+      background: white;
+      padding: 1rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+    }
+    .bank-details h4 {
+      color: #2caeba;
+      margin-bottom: 1rem;
+    }
+    .bank-details p {
+      margin-bottom: 0.5rem;
+    }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="payment-container">
+    <div class="payment-header">
+      <h2>Complete Your Payment</h2>
+      <p>Choose your preferred payment method</p>
+    </div>
+
+    <div class="booking-summary" id="booking-summary">
+      <h3>Booking Summary</h3>
+      <div class="loading">Loading booking details...</div>
+    </div>
+
+    <div class="payment-methods">
+      <h3>Select Payment Method</h3>
+      
+      <button class="payment-method-btn" data-method="stripe">
+        <i class="fab fa-cc-stripe"></i>
+        <span>Pay with Card (Stripe)</span>
+      </button>
+
+      <button class="payment-method-btn" data-method="paypal">
+        <i class="fab fa-paypal"></i>
+        <span>Pay with PayPal</span>
+      </button>
+
+      <button class="payment-method-btn" data-method="bank">
+        <i class="fas fa-university"></i>
+        <span>Bank Transfer</span>
+      </button>
+    </div>
+
+    <!-- Stripe Payment Form -->
+    <div class="payment-form" id="stripe-form">
+      <h4>Card Payment via Stripe</h4>
+      <p>You will be redirected to Stripe's secure checkout page.</p>
+      <button class="btn-pay" id="stripe-checkout-btn">Proceed to Stripe Checkout</button>
+    </div>
+
+    <!-- PayPal Payment Form -->
+    <div class="payment-form" id="paypal-form">
+      <h4>PayPal Payment</h4>
+      <div id="paypal-button-container"></div>
+    </div>
+
+    <!-- Bank Transfer Form -->
+    <div class="payment-form" id="bank-form">
+      <h4>Bank Transfer Details</h4>
+      <div class="bank-details">
+        <h4>Transfer to:</h4>
+        <p><strong>Bank Name:</strong> Example Bank Kenya</p>
+        <p><strong>Account Name:</strong> BoldAdventures Ltd</p>
+        <p><strong>Account Number:</strong> 1234567890</p>
+        <p><strong>Branch:</strong> Nairobi Main</p>
+        <p><strong>SWIFT Code:</strong> EXBKKENA</p>
+      </div>
+      <form id="bank-transfer-form">
+        <div class="form-group">
+          <label for="transfer-reference">Transfer Reference Number *</label>
+          <input 
+            type="text" 
+            id="transfer-reference" 
+            placeholder="Enter your bank reference number"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="transfer-proof">Proof of Payment (Optional)</label>
+          <input 
+            type="text" 
+            id="transfer-proof" 
+            placeholder="URL to payment receipt or screenshot"
+          />
+        </div>
+        <div class="form-group">
+          <label for="transfer-notes">Additional Notes</label>
+          <textarea 
+            id="transfer-notes" 
+            rows="3" 
+            placeholder="Any additional information"
+          ></textarea>
+        </div>
+        <button type="submit" class="btn-pay">Submit Bank Transfer Details</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="./js/api.js"></script>
+  <script>
+    // Get booking ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get('booking_id');
+
+    if (!bookingId) {
+      alert('No booking ID provided');
+      window.location.href = 'index.html';
+    }
+
+    // Check if logged in
+    if (!isLoggedIn()) {
+      alert('Please login to continue with payment');
+      window.location.href = 'login.html';
+    }
+
+    // Load booking details
+    async function loadBookingDetails() {
+      try {
+        const response = await apiRequest(`/bookings/${bookingId}`);
+        const booking = response.data.booking;
+        
+        document.getElementById('booking-summary').innerHTML = `
+          <h3>Booking Summary</h3>
+          <div class="summary-item">
+            <span>Tour:</span>
+            <span>${booking.tour.title}</span>
+          </div>
+          <div class="summary-item">
+            <span>Number of People:</span>
+            <span>${booking.numberOfPeople}</span>
+          </div>
+          <div class="summary-item">
+            <span>Start Date:</span>
+            <span>${new Date(booking.startDate).toLocaleDateString()}</span>
+          </div>
+          <div class="summary-item">
+            <span>Total Amount:</span>
+            <span>Ksh ${booking.totalPrice.toLocaleString()}</span>
+          </div>
+        `;
+      } catch (error) {
+        alert('Failed to load booking details: ' + error.message);
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Payment method selection
+    const methodButtons = document.querySelectorAll('.payment-method-btn');
+    const paymentForms = document.querySelectorAll('.payment-form');
+
+    methodButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all
+        methodButtons.forEach(b => b.classList.remove('active'));
+        paymentForms.forEach(f => f.classList.remove('active'));
+        
+        // Add active to selected
+        btn.classList.add('active');
+        const method = btn.dataset.method;
+        document.getElementById(`${method}-form`).classList.add('active');
+      });
+    });
+
+    // Stripe checkout
+    document.getElementById('stripe-checkout-btn').addEventListener('click', async () => {
+      try {
+        const response = await apiRequest('/payments/stripe/create-session', {
+          method: 'POST',
+          body: JSON.stringify({ bookingId }),
+        });
+        
+        // Redirect to Stripe checkout
+        window.location.href = response.data.sessionUrl;
+      } catch (error) {
+        alert('Failed to create payment session: ' + error.message);
+      }
+    });
+
+    // Bank transfer form
+    document.getElementById('bank-transfer-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const reference = document.getElementById('transfer-reference').value;
+      const proof = document.getElementById('transfer-proof').value;
+      const notes = document.getElementById('transfer-notes').value;
+
+      try {
+        const response = await apiRequest('/payments/bank-transfer', {
+          method: 'POST',
+          body: JSON.stringify({
+            bookingId,
+            bankTransferReference: reference,
+            bankTransferProof: proof,
+            notes,
+          }),
+        });
+        
+        alert('Bank transfer details submitted successfully! Your payment will be verified by our team.');
+        window.location.href = 'index.html';
+      } catch (error) {
+        alert('Failed to submit bank transfer: ' + error.message);
+      }
+    });
+
+    // Initialize
+    loadBookingDetails();
+  </script>
+</body>
+</html>

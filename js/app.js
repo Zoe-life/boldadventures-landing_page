@@ -36,6 +36,25 @@ scrollLinks.forEach(link => {
   });
 });
 
+// ********** Read More Button Functionality ************
+// Add event listener for read more button in about section
+const readMoreBtn = document.getElementById('read-more-btn');
+const moreContent = document.getElementById('about-more-content');
+
+if (readMoreBtn && moreContent) {
+  readMoreBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    
+    if (moreContent.style.display === 'none') {
+      moreContent.style.display = 'block';
+      readMoreBtn.textContent = 'read less';
+    } else {
+      moreContent.style.display = 'none';
+      readMoreBtn.textContent = 'read more';
+    }
+  });
+}
+
 // ********** Tour Booking Functionality ************
 // Add event listeners to all booking buttons
 document.addEventListener('DOMContentLoaded', () => {

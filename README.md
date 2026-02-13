@@ -53,7 +53,12 @@ npm install
 cp .env.example .env
 ```
 
-Edit the `.env` file with your configuration (see `.env.example` for all options).
+Edit the `.env` file with your configuration. See [docs/ENV_SETUP.md](./docs/ENV_SETUP.md) for detailed instructions on obtaining all required credentials including:
+- MongoDB connection string
+- JWT secrets
+- Google OAuth credentials
+- Payment gateway API keys (Stripe & PayPal)
+- Email service credentials
 
 4. Start MongoDB (if running locally):
 ```bash
@@ -74,7 +79,7 @@ The application will be available at `http://localhost:5000`
 
 ## API Documentation
 
-See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for complete API reference including:
+See [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) for complete API reference including:
 - Authentication endpoints
 - Tour management
 - Newsletter subscription
@@ -144,7 +149,7 @@ Deployment:
 The frontend is currently deployed on Vercel.
 The backend can be deployed on **Render** (recommended) or Cloudflare Workers.
 
-See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for deployment instructions.
+See [docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) for deployment instructions.
 
 ## Test Accounts
 

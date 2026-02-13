@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const path = require('path');
+const passport = require('passport');
 
 const connectDB = require('./server/config/database');
 const { errorHandler, notFound } = require('./server/middleware/errorHandler');
@@ -15,12 +16,17 @@ const authRoutes = require('./server/routes/authRoutes');
 const tourRoutes = require('./server/routes/tourRoutes');
 const newsletterRoutes = require('./server/routes/newsletterRoutes');
 const bookingRoutes = require('./server/routes/bookingRoutes');
+const paymentRoutes = require('./server/routes/paymentRoutes');
+const currencyRoutes = require('./server/routes/currencyRoutes');
 
 // Initialize express
 const app = express();
 
 // Connect to database
 connectDB();
+
+// Passport configuration
+require('./server/config/passport')(passport);
 
 // Security middleware
 app.use(helmet({
@@ -59,6 +65,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Cookie parser
 app.use(cookieParser());
 
+// Initialize Passport
+app.use(passport.initialize());
+
 // Logging middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -72,6 +81,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tours', tourRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/currency', currencyRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
