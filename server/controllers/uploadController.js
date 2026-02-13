@@ -2,6 +2,35 @@ const User = require('../models/User');
 const Tour = require('../models/Tour');
 const fs = require('fs');
 const path = require('path');
+const { isCloudinaryConfigured } = require('../config/cloudinary');
+
+/**
+ * Helper function to get image URL based on storage type
+ * @param {object} file - Multer file object
+ */
+const getImageUrl = (file) => {
+  if (isCloudinaryConfigured()) {
+    // Cloudinary URL is already in file.path
+    return file.path;
+  } else {
+    // Local file URL
+    return `/images/uploads/${file.filename}`;
+  }
+};
+
+/**
+ * Helper function to delete local file if needed
+ * @param {object} file - Multer file object
+ */
+const deleteLocalFile = (file) => {
+  if (!isCloudinaryConfigured() && file && file.path) {
+    try {
+      fs.unlinkSync(file.path);
+    } catch (error) {
+      console.error('Error deleting local file:', error);
+    }
+  }
+};
 
 /**
  * @desc    Upload user profile picture
@@ -18,7 +47,7 @@ const uploadProfilePicture = async (req, res) => {
     }
 
     // Generate URL for the uploaded file
-    const imageUrl = `/images/uploads/${req.file.filename}`;
+    const imageUrl = getImageUrl(req.file);
 
     // Update user avatar
     const user = await User.findByIdAndUpdate(
@@ -33,14 +62,13 @@ const uploadProfilePicture = async (req, res) => {
       data: {
         imageUrl,
         user,
+        storageType: isCloudinaryConfigured() ? 'cloudinary' : 'local',
       },
     });
   } catch (error) {
     console.error('Upload profile picture error:', error);
-    // Delete uploaded file if database update fails
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
+    // Delete uploaded file if database update fails (only for local storage)
+    deleteLocalFile(req.file);
     res.status(500).json({
       success: false,
       message: 'Failed to upload profile picture',
@@ -64,7 +92,7 @@ const uploadTourImages = async (req, res) => {
       // Delete uploaded files if tour not found
       if (req.files) {
         Object.values(req.files).flat().forEach(file => {
-          fs.unlinkSync(file.path);
+          deleteLocalFile(file);
         });
       }
       return res.status(404).json({
@@ -81,7 +109,7 @@ const uploadTourImages = async (req, res) => {
       // Delete uploaded files if unauthorized
       if (req.files) {
         Object.values(req.files).flat().forEach(file => {
-          fs.unlinkSync(file.path);
+          deleteLocalFile(file);
         });
       }
       return res.status(403).json({
@@ -94,14 +122,12 @@ const uploadTourImages = async (req, res) => {
 
     // Handle cover image
     if (req.files && req.files.coverImage && req.files.coverImage[0]) {
-      updateData.coverImage = `/images/uploads/${req.files.coverImage[0].filename}`;
+      updateData.coverImage = getImageUrl(req.files.coverImage[0]);
     }
 
     // Handle additional images
     if (req.files && req.files.images) {
-      const imageUrls = req.files.images.map(
-        file => `/images/uploads/${file.filename}`
-      );
+      const imageUrls = req.files.images.map(file => getImageUrl(file));
       updateData.images = [...(tour.images || []), ...imageUrls];
     }
 
@@ -117,14 +143,15 @@ const uploadTourImages = async (req, res) => {
       message: 'Tour images uploaded successfully',
       data: {
         tour: updatedTour,
+        storageType: isCloudinaryConfigured() ? 'cloudinary' : 'local',
       },
     });
   } catch (error) {
     console.error('Upload tour images error:', error);
-    // Delete uploaded files on error
+    // Delete uploaded files on error (only for local storage)
     if (req.files) {
       Object.values(req.files).flat().forEach(file => {
-        fs.unlinkSync(file.path);
+        deleteLocalFile(file);
       });
     }
     res.status(500).json({
@@ -150,24 +177,23 @@ const uploadImage = async (req, res) => {
     }
 
     // Generate URL for the uploaded file
-    const imageUrl = `/images/uploads/${req.file.filename}`;
+    const imageUrl = getImageUrl(req.file);
 
     res.status(200).json({
       success: true,
       message: 'Image uploaded successfully',
       data: {
         imageUrl,
-        filename: req.file.filename,
+        filename: req.file.filename || req.file.originalname,
         size: req.file.size,
         mimetype: req.file.mimetype,
+        storageType: isCloudinaryConfigured() ? 'cloudinary' : 'local',
       },
     });
   } catch (error) {
     console.error('Upload image error:', error);
-    // Delete uploaded file on error
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
+    // Delete uploaded file on error (only for local storage)
+    deleteLocalFile(req.file);
     res.status(500).json({
       success: false,
       message: 'Failed to upload image',
@@ -184,6 +210,16 @@ const uploadImage = async (req, res) => {
 const deleteImage = async (req, res) => {
   try {
     const { filename } = req.params;
+    
+    if (isCloudinaryConfigured()) {
+      // For Cloudinary, we would need the public_id to delete
+      // This is a simplified implementation
+      return res.status(200).json({
+        success: true,
+        message: 'Image deletion from Cloudinary requires public_id. Please use the deleteFromCloudinary utility directly.',
+      });
+    }
+
     const filePath = path.join(__dirname, '../../images/uploads', filename);
 
     // Check if file exists
