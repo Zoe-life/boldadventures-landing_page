@@ -10,6 +10,15 @@ const passport = require('passport');
 
 const connectDB = require('./server/config/database');
 const { errorHandler, notFound } = require('./server/middleware/errorHandler');
+const {
+  sanitizeData,
+  preventParameterPollution,
+  createSpeedLimiter,
+  apiRateLimiter,
+  validateRequestSize,
+  securityHeaders,
+} = require('./server/middleware/security');
+const { csrfErrorHandler } = require('./server/middleware/csrf');
 
 // Import routes
 const authRoutes = require('./server/routes/authRoutes');
@@ -18,6 +27,8 @@ const newsletterRoutes = require('./server/routes/newsletterRoutes');
 const bookingRoutes = require('./server/routes/bookingRoutes');
 const paymentRoutes = require('./server/routes/paymentRoutes');
 const currencyRoutes = require('./server/routes/currencyRoutes');
+const csrfRoutes = require('./server/routes/csrfRoutes');
+const webhookRoutes = require('./server/routes/webhookRoutes');
 
 // Initialize express
 const app = express();
@@ -33,12 +44,30 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://js.stripe.com", "https://www.paypal.com"],
       imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://api.stripe.com", "https://www.paypal.com"],
+      frameSrc: ["'self'", "https://js.stripe.com", "https://www.paypal.com"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: [],
     },
   },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  noSniff: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
+
+// Additional security headers
+app.use(securityHeaders);
 
 // CORS configuration
 const corsOptions = {
@@ -58,12 +87,29 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Speed limiter to slow down brute force attacks
+app.use('/api/', createSpeedLimiter());
+
+// Cookie parser (before webhooks as webhooks may need to be excluded)
+// Note: CSRF protection is selectively applied to state-changing routes
+// GET requests and public endpoints intentionally don't require CSRF tokens
+app.use(cookieParser());
+
+// Webhook routes (MUST be before body parser to get raw body for signature verification)
+app.use('/api/webhooks', webhookRoutes);
+
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Cookie parser
-app.use(cookieParser());
+// Request size validation
+app.use(validateRequestSize);
+
+// Data sanitization against NoSQL injection
+app.use(sanitizeData());
+
+// Prevent HTTP Parameter Pollution
+app.use(preventParameterPollution());
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -77,6 +123,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.static(path.join(__dirname, '/')));
 
 // API routes
+app.use('/api', csrfRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/tours', tourRoutes);
 app.use('/api/newsletter', newsletterRoutes);
@@ -94,12 +141,17 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve frontend for all other routes (SPA support)
-app.get('*', (req, res) => {
+app.use((req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Error handling
 app.use(notFound);
+app.use(csrfErrorHandler);
 app.use(errorHandler);
 
 // Start server

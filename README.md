@@ -27,6 +27,14 @@ This repository contains the full-stack source code for Bold Adventures, a web p
 - Input validation and sanitization
 - CORS protection
 - httpOnly cookies for token storage
+- **XSS Protection**: Enhanced CSP, input validation, security headers
+- **CSRF Protection**: Double submit cookie pattern with csrf-csrf
+- **NoSQL Injection Prevention**: MongoDB sanitization with express-mongo-sanitize
+- **DDoS Protection**: Multi-layer rate limiting, slowdown, HPP protection
+- **Payment Security**: Webhook verification, transaction logging, double submission prevention
+- **Nginx Reverse Proxy**: Additional security and performance layer (optional)
+
+For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md)
 
 ## Getting Started
 
@@ -143,6 +151,13 @@ Features:
 - Input validation and sanitization
 - CORS protection
 - XSS protection
+- CSRF protection
+- NoSQL injection prevention
+- DDoS protection (multi-layer)
+- Payment security with webhook verification
+- Nginx reverse proxy support
+
+See [docs/SECURITY.md](./docs/SECURITY.md) for comprehensive security documentation.
 
 Deployment:
 

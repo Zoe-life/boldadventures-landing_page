@@ -13,6 +13,8 @@ const {
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const { authRateLimiter } = require('../middleware/security');
+const { csrfProtection } = require('../middleware/csrf');
 
 const router = express.Router();
 
@@ -43,13 +45,13 @@ const changePasswordValidation = [
 ];
 
 // Routes
-router.post('/register', registerValidation, validate, register);
-router.post('/login', loginValidation, validate, login);
-router.post('/logout', protect, logout);
+router.post('/register', authRateLimiter, csrfProtection, registerValidation, validate, register);
+router.post('/login', authRateLimiter, csrfProtection, loginValidation, validate, login);
+router.post('/logout', protect, csrfProtection, logout);
 router.post('/refresh', refreshToken);
 router.get('/me', protect, getMe);
-router.put('/me', protect, updateProfileValidation, validate, updateProfile);
-router.put('/change-password', protect, changePasswordValidation, validate, changePassword);
+router.put('/me', protect, csrfProtection, updateProfileValidation, validate, updateProfile);
+router.put('/change-password', protect, csrfProtection, changePasswordValidation, validate, changePassword);
 
 // Google OAuth Routes
 router.get(
