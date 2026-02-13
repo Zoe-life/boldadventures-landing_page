@@ -433,119 +433,118 @@
       });
 
       // Load guide dashboard data
-      function loadGuideDashboard() {
-        // Mock data - Replace with actual API calls
-        document.getElementById('my-tours-count').textContent = '8';
-        document.getElementById('upcoming-bookings-count').textContent = '15';
-        document.getElementById('total-participants').textContent = '42';
+      async function loadGuideDashboard() {
+        try {
+          // Fetch statistics from API
+          const stats = await getGuideStats();
+          
+          document.getElementById('my-tours-count').textContent = stats.myToursCount || '0';
+          document.getElementById('upcoming-bookings-count').textContent = stats.upcomingBookings || '0';
+          document.getElementById('total-participants').textContent = stats.totalParticipants || '0';
 
-        loadMyTours();
-        loadMyBookings();
+          // Load data
+          await loadMyTours();
+          await loadMyBookings();
+        } catch (error) {
+          console.error('Error loading guide dashboard:', error);
+          // Show fallback values if API fails
+          document.getElementById('my-tours-count').textContent = 'N/A';
+          document.getElementById('upcoming-bookings-count').textContent = 'N/A';
+          document.getElementById('total-participants').textContent = 'N/A';
+        }
       }
 
-      function loadMyTours() {
+      async function loadMyTours() {
         const toursGrid = document.getElementById('tours-grid');
-        const mockTours = [
-          {
-            id: 1,
-            title: 'Tibet Adventure',
-            location: 'China',
-            duration: '6 days',
-            price: 'Ksh.340,000',
-            image: './images/tour-1.jpeg',
-            bookings: 5
-          },
-          {
-            id: 2,
-            title: 'Best of Java',
-            location: 'Indonesia',
-            duration: '11 days',
-            price: 'Ksh.200,000',
-            image: './images/tour-2.jpeg',
-            bookings: 8
-          },
-          {
-            id: 3,
-            title: 'Explore Hong Kong',
-            location: 'Hong Kong',
-            duration: '8 days',
-            price: 'Ksh.300,000',
-            image: './images/tour-3.jpeg',
-            bookings: 3
-          },
-        ];
-
-        toursGrid.innerHTML = mockTours.map(tour => `
-          <div class="tour-item">
-            <img src="${tour.image}" alt="${tour.title}" class="tour-item-img" />
-            <div class="tour-item-content">
-              <h4>${tour.title}</h4>
-              <p><i class="fas fa-map-marker-alt"></i> ${tour.location}</p>
-              <p><i class="fas fa-clock"></i> ${tour.duration} | <strong>${tour.price}</strong></p>
-              <p><i class="fas fa-users"></i> ${tour.bookings} active bookings</p>
-              <div class="tour-item-actions">
-                <button class="action-btn btn-edit" onclick="alert('Edit tour functionality coming soon')">
-                  <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="action-btn btn-view" onclick="alert('View details coming soon')">
-                  <i class="fas fa-eye"></i> View
-                </button>
+        
+        try {
+          const data = await getGuideTours({ page: 1, limit: 10 });
+          
+          if (data.tours && data.tours.length > 0) {
+            toursGrid.innerHTML = data.tours.map(tour => `
+              <div class="tour-item">
+                <img src="${tour.coverImage || './images/tour-1.jpeg'}" alt="${tour.title}" class="tour-item-img" />
+                <div class="tour-item-content">
+                  <h4>${tour.title}</h4>
+                  <p><i class="fas fa-map-marker-alt"></i> ${tour.location?.country || 'N/A'}${tour.location?.city ? ', ' + tour.location.city : ''}</p>
+                  <p><i class="fas fa-clock"></i> ${tour.duration || 0} days | <strong>${tour.currency || 'KSH'} ${tour.price?.toLocaleString() || '0'}</strong></p>
+                  <p><i class="fas fa-users"></i> ${tour.activeBookings || 0} active bookings</p>
+                  <div class="tour-item-actions">
+                    <button class="action-btn btn-edit" onclick="alert('Edit tour functionality coming soon')">
+                      <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn btn-view" onclick="alert('View details coming soon')">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        `).join('');
+            `).join('');
+          } else {
+            toursGrid.innerHTML = '<p style="text-align: center; width: 100%;">No tours found. Create your first tour to get started!</p>';
+          }
+        } catch (error) {
+          console.error('Error loading tours:', error);
+          toursGrid.innerHTML = '<p style="text-align: center; width: 100%; color: red;">Error loading tours</p>';
+        }
       }
 
-      function loadMyBookings() {
+      async function loadMyBookings() {
         const bookingsTableBody = document.getElementById('bookings-table-body');
-        const mockBookings = [
-          {
-            tour: 'Tibet Adventure',
-            customer: 'John Doe',
-            date: '2024-03-15',
-            participants: 2,
-            status: 'confirmed'
-          },
-          {
-            tour: 'Best of Java',
-            customer: 'Jane Smith',
-            date: '2024-04-20',
-            participants: 4,
-            status: 'pending'
-          },
-          {
-            tour: 'Explore Hong Kong',
-            customer: 'Bob Johnson',
-            date: '2024-05-10',
-            participants: 1,
-            status: 'confirmed'
-          },
-          {
-            tour: 'Tibet Adventure',
-            customer: 'Alice Brown',
-            date: '2024-02-01',
-            participants: 3,
-            status: 'completed'
-          },
-        ];
+        
+        try {
+          const data = await getGuideBookings({ page: 1, limit: 10 });
+          
+          if (data.bookings && data.bookings.length > 0) {
+            bookingsTableBody.innerHTML = data.bookings.map(booking => {
+              const startDate = new Date(booking.startDate).toLocaleDateString();
+              return `
+                <tr>
+                  <td>${booking.tour?.title || 'N/A'}</td>
+                  <td>${booking.user?.name || 'N/A'}</td>
+                  <td>${startDate}</td>
+                  <td>${booking.numberOfPeople || 0}</td>
+                  <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
+                  <td>
+                    <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="action-btn btn-edit" onclick="showUpdateStatusModal('${booking._id}', '${booking.status}')">
+                      <i class="fas fa-edit"></i> Update
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            bookingsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No bookings found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading bookings:', error);
+          bookingsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading bookings</td></tr>';
+        }
+      }
 
-        bookingsTableBody.innerHTML = mockBookings.map(booking => `
-          <tr>
-            <td>${booking.tour}</td>
-            <td>${booking.customer}</td>
-            <td>${booking.date}</td>
-            <td>${booking.participants}</td>
-            <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
-            <td>
-              <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
-                <i class="fas fa-eye"></i> View
-              </button>
-              <button class="action-btn btn-edit" onclick="alert('Update status coming soon')">
-                <i class="fas fa-edit"></i> Update
-              </button>
-            </td>
-          </tr>
-        `).join('');
+      function showUpdateStatusModal(bookingId, currentStatus) {
+        const newStatus = prompt(`Update booking status.\nCurrent: ${currentStatus}\n\nEnter new status (pending, confirmed, cancelled, completed):`, currentStatus);
+        
+        if (newStatus && ['pending', 'confirmed', 'cancelled', 'completed'].includes(newStatus.toLowerCase())) {
+          updateBookingStatusHandler(bookingId, newStatus.toLowerCase());
+        } else if (newStatus) {
+          alert('Invalid status. Please use: pending, confirmed, cancelled, or completed');
+        }
+      }
+
+      async function updateBookingStatusHandler(bookingId, newStatus) {
+        try {
+          await updateGuideBookingStatus(bookingId, newStatus);
+          alert('Booking status updated successfully. Email notification sent to customer.');
+          await loadMyBookings(); // Reload bookings table
+        } catch (error) {
+          console.error('Error updating booking status:', error);
+          alert('Failed to update booking status: ' + error.message);
+        }
+      }
       }
     </script>
   </body>

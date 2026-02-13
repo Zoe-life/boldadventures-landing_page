@@ -585,119 +585,165 @@
 
       // Load dashboard statistics and data
       async function loadDashboardData() {
-        // Mock data - Replace with actual API calls when backend is connected
-        document.getElementById('total-users').textContent = '156';
-        document.getElementById('total-tours').textContent = '24';
-        document.getElementById('total-bookings').textContent = '89';
-        document.getElementById('total-subscribers').textContent = '342';
+        try {
+          // Fetch statistics from API
+          const stats = await getAdminStats();
+          
+          document.getElementById('total-users').textContent = stats.totalUsers || '0';
+          document.getElementById('total-tours').textContent = stats.totalTours || '0';
+          document.getElementById('total-bookings').textContent = stats.totalBookings || '0';
+          document.getElementById('total-subscribers').textContent = stats.totalSubscribers || '0';
 
-        // Load mock users
-        loadUsers();
-        loadTours();
-        loadBookings();
-        loadSubscribers();
+          // Load data tables
+          await loadUsers();
+          await loadTours();
+          await loadBookings();
+          await loadSubscribers();
+        } catch (error) {
+          console.error('Error loading dashboard data:', error);
+          // Show fallback values if API fails
+          document.getElementById('total-users').textContent = 'N/A';
+          document.getElementById('total-tours').textContent = 'N/A';
+          document.getElementById('total-bookings').textContent = 'N/A';
+          document.getElementById('total-subscribers').textContent = 'N/A';
+        }
       }
 
-      function loadUsers() {
+      async function loadUsers() {
         const usersTableBody = document.getElementById('users-table-body');
-        const mockUsers = [
-          { name: 'John Doe', email: 'john@example.com', role: 'user', active: true },
-          { name: 'Jane Smith', email: 'jane@example.com', role: 'guide', active: true },
-          { name: 'Admin User', email: 'admin@boldadventures.com', role: 'admin', active: true },
-        ];
-
-        usersTableBody.innerHTML = mockUsers.map(user => `
-          <tr>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td><span class="badge badge-${user.role}">${user.role}</span></td>
-            <td>${user.active ? 'Active' : 'Inactive'}</td>
-            <td>
-              <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button class="action-btn btn-view" onclick="alert('View functionality coming soon')">
-                <i class="fas fa-eye"></i> View
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        
+        try {
+          const data = await getAllUsers({ page: 1, limit: 10 });
+          
+          if (data.users && data.users.length > 0) {
+            usersTableBody.innerHTML = data.users.map(user => `
+              <tr>
+                <td>${user.name || 'N/A'}</td>
+                <td>${user.email || 'N/A'}</td>
+                <td><span class="badge badge-${user.role || 'user'}">${user.role || 'user'}</span></td>
+                <td>${user.isActive ? 'Active' : 'Inactive'}</td>
+                <td>
+                  <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="action-btn btn-view" onclick="alert('View functionality coming soon')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No users found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading users:', error);
+          usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Error loading users</td></tr>';
+        }
       }
 
-      function loadTours() {
+      async function loadTours() {
         const toursTableBody = document.getElementById('tours-table-body');
-        const mockTours = [
-          { title: 'Tibet Adventure', category: 'hiking', location: 'China', duration: '6 days', price: 'Ksh.340,000', featured: true },
-          { title: 'Best of Java', category: 'hiking', location: 'Indonesia', duration: '11 days', price: 'Ksh.200,000', featured: false },
-          { title: 'Explore Hong Kong', category: 'biking', location: 'Hong Kong', duration: '8 days', price: 'Ksh.300,000', featured: true },
-        ];
-
-        toursTableBody.innerHTML = mockTours.map(tour => `
-          <tr>
-            <td>${tour.title}</td>
-            <td>${tour.category}</td>
-            <td>${tour.location}</td>
-            <td>${tour.duration}</td>
-            <td>${tour.price}</td>
-            <td>${tour.featured ? '⭐ Yes' : 'No'}</td>
-            <td>
-              <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button class="action-btn btn-delete" onclick="if(confirm('Delete this tour?')) alert('Delete functionality coming soon')">
-                <i class="fas fa-trash"></i> Delete
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        
+        try {
+          const data = await getAllTours({ page: 1, limit: 10 });
+          
+          if (data.tours && data.tours.length > 0) {
+            toursTableBody.innerHTML = data.tours.map(tour => `
+              <tr>
+                <td>${tour.title || 'N/A'}</td>
+                <td>${tour.category || 'N/A'}</td>
+                <td>${tour.location?.country || 'N/A'}${tour.location?.city ? ', ' + tour.location.city : ''}</td>
+                <td>${tour.duration || 0} days</td>
+                <td>${tour.currency || 'KSH'} ${tour.price?.toLocaleString() || '0'}</td>
+                <td>${tour.featured ? '⭐ Yes' : 'No'}</td>
+                <td>
+                  <button class="action-btn btn-edit" onclick="alert('Edit functionality coming soon')">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                  <button class="action-btn btn-delete" onclick="if(confirm('Delete this tour?')) alert('Delete functionality coming soon')">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            toursTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No tours found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading tours:', error);
+          toursTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading tours</td></tr>';
+        }
       }
 
-      function loadBookings() {
+      async function loadBookings() {
         const bookingsTableBody = document.getElementById('bookings-table-body');
-        const mockBookings = [
-          { user: 'John Doe', tour: 'Tibet Adventure', date: '2024-03-15', people: 2, status: 'confirmed' },
-          { user: 'Jane Smith', tour: 'Best of Java', date: '2024-04-20', people: 4, status: 'pending' },
-          { user: 'Bob Johnson', tour: 'Explore Hong Kong', date: '2024-05-10', people: 1, status: 'confirmed' },
-        ];
-
-        bookingsTableBody.innerHTML = mockBookings.map(booking => `
-          <tr>
-            <td>${booking.user}</td>
-            <td>${booking.tour}</td>
-            <td>${booking.date}</td>
-            <td>${booking.people}</td>
-            <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
-            <td>
-              <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
-                <i class="fas fa-eye"></i> View
-              </button>
-              <button class="action-btn btn-edit" onclick="alert('Update status coming soon')">
-                <i class="fas fa-edit"></i> Update
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        
+        try {
+          const data = await getAllBookings({ page: 1, limit: 10 });
+          
+          if (data.bookings && data.bookings.length > 0) {
+            bookingsTableBody.innerHTML = data.bookings.map(booking => {
+              const startDate = new Date(booking.startDate).toLocaleDateString();
+              return `
+                <tr>
+                  <td>${booking.user?.name || 'N/A'}</td>
+                  <td>${booking.tour?.title || 'N/A'}</td>
+                  <td>${startDate}</td>
+                  <td>${booking.numberOfPeople || 0}</td>
+                  <td><span class="badge badge-${booking.status}">${booking.status}</span></td>
+                  <td>
+                    <button class="action-btn btn-view" onclick="alert('View booking details coming soon')">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="action-btn btn-edit" onclick="showUpdateStatusModal('${booking._id}', '${booking.status}')">
+                      <i class="fas fa-edit"></i> Update
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            bookingsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No bookings found</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error loading bookings:', error);
+          bookingsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading bookings</td></tr>';
+        }
       }
 
-      function loadSubscribers() {
+      async function loadSubscribers() {
         const subscribersTableBody = document.getElementById('subscribers-table-body');
-        const mockSubscribers = [
-          { email: 'subscriber1@example.com', status: 'active', date: '2024-01-15' },
-          { email: 'subscriber2@example.com', status: 'active', date: '2024-02-20' },
-          { email: 'subscriber3@example.com', status: 'inactive', date: '2024-03-10' },
-        ];
+        
+        try {
+          // Note: We need to add a subscribers endpoint in the backend if it doesn't exist
+          // For now, we'll show a placeholder
+          subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Subscribers data will be loaded from API</td></tr>';
+        } catch (error) {
+          console.error('Error loading subscribers:', error);
+          subscribersTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Error loading subscribers</td></tr>';
+        }
+      }
 
-        subscribersTableBody.innerHTML = mockSubscribers.map(sub => `
-          <tr>
-            <td>${sub.email}</td>
-            <td>${sub.status}</td>
-            <td>${sub.date}</td>
-            <td>
-              <button class="action-btn btn-view" onclick="alert('View subscriber details coming soon')">
-                <i class="fas fa-eye"></i> View
-              </button>
-            </td>
-          </tr>
+      function showUpdateStatusModal(bookingId, currentStatus) {
+        const newStatus = prompt(`Update booking status.\nCurrent: ${currentStatus}\n\nEnter new status (pending, confirmed, cancelled, completed):`, currentStatus);
+        
+        if (newStatus && ['pending', 'confirmed', 'cancelled', 'completed'].includes(newStatus.toLowerCase())) {
+          updateBookingStatusHandler(bookingId, newStatus.toLowerCase());
+        } else if (newStatus) {
+          alert('Invalid status. Please use: pending, confirmed, cancelled, or completed');
+        }
+      }
+
+      async function updateBookingStatusHandler(bookingId, newStatus) {
+        try {
+          await updateBookingStatus(bookingId, newStatus);
+          alert('Booking status updated successfully');
+          await loadBookings(); // Reload bookings table
+        } catch (error) {
+          console.error('Error updating booking status:', error);
+          alert('Failed to update booking status: ' + error.message);
+        }
+      }
         `).join('');
       }
     </script>

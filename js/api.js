@@ -436,6 +436,182 @@ document.addEventListener('DOMContentLoaded', () => {
   displayFeaturedTours();
 });
 
+// ==========================================
+// Admin API Functions
+// ==========================================
+
+/**
+ * Get admin dashboard statistics
+ */
+async function getAdminStats() {
+  try {
+    const data = await apiRequest('/admin/stats');
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get all users (admin only)
+ */
+async function getAllUsers(filters = {}) {
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/admin/users${queryParams ? `?${queryParams}` : ''}`;
+  
+  try {
+    const data = await apiRequest(endpoint);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get all tours (admin only)
+ */
+async function getAllTours(filters = {}) {
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/admin/tours${queryParams ? `?${queryParams}` : ''}`;
+  
+  try {
+    const data = await apiRequest(endpoint);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get all bookings (admin only)
+ */
+async function getAllBookings(filters = {}) {
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/admin/bookings${queryParams ? `?${queryParams}` : ''}`;
+  
+  try {
+    const data = await apiRequest(endpoint);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Update booking status (admin only)
+ */
+async function updateBookingStatus(bookingId, status, paymentStatus) {
+  try {
+    const data = await apiRequest(`/admin/bookings/${bookingId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, paymentStatus }),
+    });
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get admin analytics
+ */
+async function getAdminAnalytics(period = '7days') {
+  try {
+    const data = await apiRequest(`/admin/analytics?period=${period}`);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get audit logs
+ */
+async function getAuditLogs(filters = {}) {
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/admin/audit-logs${queryParams ? `?${queryParams}` : ''}`;
+  
+  try {
+    const data = await apiRequest(endpoint);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// ==========================================
+// Guide API Functions
+// ==========================================
+
+/**
+ * Get guide dashboard statistics
+ */
+async function getGuideStats() {
+  try {
+    const data = await apiRequest('/guide/stats');
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get guide's tours
+ */
+async function getGuideTours(filters = {}) {
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/guide/tours${queryParams ? `?${queryParams}` : ''}`;
+  
+  try {
+    const data = await apiRequest(endpoint);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get guide's bookings
+ */
+async function getGuideBookings(filters = {}) {
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/guide/bookings${queryParams ? `?${queryParams}` : ''}`;
+  
+  try {
+    const data = await apiRequest(endpoint);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Update booking status (guide only)
+ */
+async function updateGuideBookingStatus(bookingId, status) {
+  try {
+    const data = await apiRequest(`/guide/bookings/${bookingId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get guide analytics
+ */
+async function getGuideAnalytics(period = '30days') {
+  try {
+    const data = await apiRequest(`/guide/analytics?period=${period}`);
+    return data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 // Export functions for use in other files
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -453,5 +629,17 @@ if (typeof module !== 'undefined' && module.exports) {
     getBooking,
     cancelBooking,
     isLoggedIn,
+    getAdminStats,
+    getAllUsers,
+    getAllTours,
+    getAllBookings,
+    updateBookingStatus,
+    getAdminAnalytics,
+    getAuditLogs,
+    getGuideStats,
+    getGuideTours,
+    getGuideBookings,
+    updateGuideBookingStatus,
+    getGuideAnalytics,
   };
 }
