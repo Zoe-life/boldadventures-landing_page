@@ -3,10 +3,14 @@ const { loadSecrets } = require('./server/config/doppler');
 
 // Load secrets before initializing other modules
 (async () => {
-  await loadSecrets();
-  
-  // Start the application after secrets are loaded
-  startServer();
+  try {
+    await loadSecrets();
+    // Start the application after secrets are loaded
+    startServer();
+  } catch (error) {
+    console.error('Fatal error during initialization:', error);
+    process.exit(1);
+  }
 })();
 
 function startServer() {

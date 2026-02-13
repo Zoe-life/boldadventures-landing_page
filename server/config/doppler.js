@@ -7,6 +7,10 @@
 
 const { DopplerSDK } = require('@dopplerhq/node-sdk');
 
+// Default configuration values
+const DEFAULT_PROJECT = 'boldadventures';
+const DEFAULT_CONFIG = 'dev';
+
 /**
  * Initialize and load secrets from Doppler
  * Falls back to dotenv if Doppler token is not available
@@ -31,8 +35,8 @@ async function loadSecrets() {
 
     // Fetch all secrets
     const response = await doppler.secrets.list({
-      project: process.env.DOPPLER_PROJECT || 'boldadventures',
-      config: process.env.DOPPLER_CONFIG || 'dev',
+      project: process.env.DOPPLER_PROJECT || DEFAULT_PROJECT,
+      config: process.env.DOPPLER_CONFIG || DEFAULT_CONFIG,
     });
 
     // Load secrets into process.env
