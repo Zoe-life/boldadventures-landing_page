@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - BoldAdventures</title>
+    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="./fontawesome-free-5.12.1-web/css/all.min.css" />
+    <link rel="stylesheet" href="./css/styles.css" />
+    <style>
+      .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+          url('./images/tour-1.jpeg') center/cover;
+      }
+      .auth-form {
+        background: white;
+        padding: 3rem;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        max-width: 500px;
+        width: 100%;
+      }
+      .auth-form h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #2caeba;
+      }
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 600;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+      }
+      .form-group input:focus {
+        outline: none;
+        border-color: #2caeba;
+      }
+      .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: #2caeba;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .btn-submit:hover {
+        background: #1a8792;
+      }
+      .auth-toggle {
+        text-align: center;
+        margin-top: 1.5rem;
+      }
+      .auth-toggle a {
+        color: #2caeba;
+        text-decoration: none;
+      }
+      .auth-toggle a:hover {
+        text-decoration: underline;
+      }
+      .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 0.75rem;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        display: none;
+      }
+      .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 0.75rem;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-container">
+      <div class="auth-form">
+        <h2 id="form-title">Login to BoldAdventures</h2>
+        
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+
+        <!-- Login Form -->
+        <form id="login-form" style="display: block;">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input
+              type="email"
+              id="login-email"
+              name="email"
+              placeholder="your@email.com"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input
+              type="password"
+              id="login-password"
+              name="password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-submit">Login</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" style="display: none;">
+          <div class="form-group">
+            <label for="register-name">Name</label>
+            <input
+              type="text"
+              id="register-name"
+              name="name"
+              placeholder="John Doe"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input
+              type="email"
+              id="register-email"
+              name="email"
+              placeholder="your@email.com"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input
+              type="password"
+              id="register-password"
+              name="password"
+              placeholder="At least 8 characters"
+              minlength="8"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-submit">Register</button>
+        </form>
+
+        <div class="auth-toggle">
+          <p id="toggle-text">
+            Don't have an account?
+            <a href="#" id="toggle-form">Register here</a>
+          </p>
+        </div>
+
+        <div class="auth-toggle">
+          <a href="index.html">← Back to Home</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/api.js"></script>
+    <script>
+      // Toggle between login and register forms
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      const formTitle = document.getElementById('form-title');
+      const toggleText = document.getElementById('toggle-text');
+      const toggleLink = document.getElementById('toggle-form');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+
+      let isLoginForm = true;
+
+      // Define toggle handler as a named function
+      function handleToggleClick(e) {
+        e.preventDefault();
+        isLoginForm = !isLoginForm;
+
+        if (isLoginForm) {
+          loginForm.style.display = 'block';
+          registerForm.style.display = 'none';
+          formTitle.textContent = 'Login to BoldAdventures';
+          toggleText.innerHTML = 'Don\'t have an account? <a href="#" id="toggle-form">Register here</a>';
+        } else {
+          loginForm.style.display = 'none';
+          registerForm.style.display = 'block';
+          formTitle.textContent = 'Register for BoldAdventures';
+          toggleText.innerHTML = 'Already have an account? <a href="#" id="toggle-form">Login here</a>';
+        }
+
+        // Re-attach event listener to new link
+        document.getElementById('toggle-form').addEventListener('click', handleToggleClick);
+        hideMessages();
+      }
+
+      toggleLink.addEventListener('click', handleToggleClick);
+
+      // Show error message
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+      }
+
+      // Show success message
+      function showSuccess(message) {
+        successMessage.textContent = message;
+        successMessage.style.display = 'block';
+        errorMessage.style.display = 'none';
+      }
+
+      // Hide messages
+      function hideMessages() {
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+      }
+
+      // Handle login
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideMessages();
+
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        try {
+          const user = await login(email, password);
+          showSuccess('Login successful! Redirecting...');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } catch (error) {
+          showError(error.message || 'Login failed. Please check your credentials.');
+        }
+      });
+
+      // Handle registration
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideMessages();
+
+        const name = document.getElementById('register-name').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+
+        try {
+          const user = await register(name, email, password);
+          showSuccess('Registration successful! Redirecting...');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } catch (error) {
+          showError(error.message || 'Registration failed. Please try again.');
+        }
+      });
+
+      // Check if already logged in
+      if (isLoggedIn()) {
+        window.location.href = 'index.html';
+      }
+    </script>
+  </body>
+</html>
