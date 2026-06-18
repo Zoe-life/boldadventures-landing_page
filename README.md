@@ -124,7 +124,7 @@ For detailed security information, see [docs/SECURITY.md](./docs/SECURITY.md) an
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Zoe-life/boldadventures-landing_page.git
+git clone https://github.com/merlynzawadi/boldadventures.git
 cd boldadventures-landing_page
 ```
 
